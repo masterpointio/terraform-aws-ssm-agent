@@ -1,3 +1,50 @@
+/**
+ * [![Masterpoint Logo](https://i.imgur.com/RDLnuQO.png)](https://masterpoint.io)
+ *
+ * # terraform-aws-ssm-agent
+ *
+ * A Terraform Module to create an SSM Agent EC2 instance along withs its corresponding role and instance profile.
+ *
+ * ## Usage
+ *
+ * ```hcl
+ * module "ssm_agent" {
+ *   source     = "git::https://github.com/masterpointio/terraform-aws-ssm-agent.git?ref=tags/0.1.0"
+ *   stage      = var.stage
+ *   namespace  = var.namespace
+ *   vpc_id     = module.vpc.vpc_id
+ *   subnet_ids = module.subnets.private_subnet_ids
+ * }
+ *
+ * module "vpc" {
+ *   source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.10.0"
+ *   namespace  = var.namespace
+ *   stage      = var.stage
+ *   name       = var.name
+ *   cidr_block = "10.0.0.0/16"
+ * }
+ *
+ * module "subnets" {
+ *   source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.19.0"
+ *   availability_zones   = var.availability_zones
+ *   namespace            = var.namespace
+ *   stage                = var.stage
+ *   vpc_id               = module.vpc.vpc_id
+ *   igw_id               = module.vpc.igw_id
+ *   cidr_block           = module.vpc.vpc_cidr_block
+ *   nat_gateway_enabled  = var.nat_gateway_enabled
+ *   nat_instance_enabled = ! var.nat_gateway_enabled
+ * }
+ * ```
+ */
+
+terraform {
+  required_version = ">= 0.12"
+  required_providers {
+    aws = "~> 2.0"
+  }
+}
+
 module "label" {
   source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
   namespace = var.namespace
