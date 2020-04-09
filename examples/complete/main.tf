@@ -22,14 +22,13 @@ module "subnets" {
   nat_instance_enabled = ! var.nat_gateway_enabled
 }
 
-
 module "ssm_agent" {
-  source    = "../../"
-  stage     = var.stage
-  namespace = var.namespace
-  vpc_id    = module.vpc.vpc_id
-  subnet_id = module.subnets.private_subnet_ids[0]
-  user_data = <<EOT
+  source     = "../../"
+  stage      = var.stage
+  namespace  = var.namespace
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.subnets.private_subnet_ids
+  user_data  = <<EOT
 #!/bin/bash
 # NOTE: Since we're using a latest Amazon Linux AMI, we shouldn't need this,
 # but we'll update it to be sure.

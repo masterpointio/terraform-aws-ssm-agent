@@ -14,14 +14,20 @@ variable "name" {
   description = "Solution name, e.g. 'app' or 'jenkins'"
 }
 
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Additional tags (e.g. `map('BusinessUnit','XYZ')`"
+}
+
 variable "vpc_id" {
   type        = string
   description = "The ID of the VPC which the EC2 Instance will run in."
 }
 
-variable "subnet_id" {
-  type        = string
-  description = "The Subnet ID which the SSM Agent will run in. This *should* be a private subnet."
+variable "subnet_ids" {
+  type        = list(string)
+  description = "The Subnet IDs which the SSM Agent will run in. These *should* be private subnets."
 }
 
 variable "permissions_boundary" {
@@ -31,7 +37,7 @@ variable "permissions_boundary" {
 }
 
 variable "instance_type" {
-  default     = "t2.micro"
+  default     = "t3.nano"
   type        = string
   description = "The instance type to use for the SSM Agent EC2 Instnace."
 }
@@ -42,10 +48,10 @@ variable "ami" {
   description = "The AMI to use for the SSM Agent EC2 Instance. If not provided, the latest Amazon Linux 2 AMI will be used. Note: This will update periodically as AWS releases updates to their AL2 AMI."
 }
 
-variable "ssm_policy_arn" {
-  default     = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  type        = string
-  description = "The ARN of a policy to provide for the role. By default, this uses Amazon's managed SSM Instance policy, which allows the instance to use the core SSM functionality."
+variable "instance_count" {
+  default     = 1
+  type        = number
+  description = "The number of SSM Agent instances you would like to deploy."
 }
 
 variable "user_data" {
