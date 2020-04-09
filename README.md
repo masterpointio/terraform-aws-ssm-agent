@@ -2,7 +2,7 @@
 
 # terraform-aws-ssm-agent
 
-A Terraform Module to create an SSM Agent EC2 instance along withs its corresponding role and instance profile.
+A Terraform Module to create an SSM Agent EC2 instance (via an ASG) along with its corresponding role and instance profile.
 
 ## Usage
 
