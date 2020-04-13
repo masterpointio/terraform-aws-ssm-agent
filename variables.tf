@@ -67,3 +67,9 @@ EOT
   type        = string
   description = "The user_data to use for the SSM Agent EC2 instance. You can use this to automate installation of psql or other required command line tools."
 }
+
+variable "key_pair_name" {
+  default     = null
+  type        = string
+  description = "The name of the key-pair to associate with the SSM Agent instances. This can be (and probably should) left empty unless you specifically plan to use `AWS-StartSSHSession`."
+}

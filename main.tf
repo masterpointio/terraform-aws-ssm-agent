@@ -127,6 +127,8 @@ resource "aws_launch_template" "default" {
   name_prefix   = module.label.id
   image_id      = var.ami != "" ? var.ami : data.aws_ami.amazon_linux_2.id
   instance_type = var.instance_type
+  key_name      = var.key_pair_name
+  user_data     = base64encode(var.user_data)
 
   monitoring {
     enabled = true
@@ -141,8 +143,6 @@ resource "aws_launch_template" "default" {
   iam_instance_profile {
     name = aws_iam_instance_profile.default.name
   }
-
-  user_data = base64encode(var.user_data)
 
   tag_specifications {
     resource_type = "instance"

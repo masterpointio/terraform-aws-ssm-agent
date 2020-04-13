@@ -56,6 +56,7 @@ module "subnets" {
 | ami | The AMI to use for the SSM Agent EC2 Instance. If not provided, the latest Amazon Linux 2 AMI will be used. Note: This will update periodically as AWS releases updates to their AL2 AMI. | `string` | `""` | no |
 | instance\_count | The number of SSM Agent instances you would like to deploy. | `number` | `1` | no |
 | instance\_type | The instance type to use for the SSM Agent EC2 Instnace. | `string` | `"t3.nano"` | no |
+| key\_pair\_name | The name of the key-pair to associate with the SSM Agent instances. This can be (and probably should) left empty unless you specifically plan to use `AWS-StartSSHSession`. | `string` | `null` | no |
 | name | Solution name, e.g. 'app' or 'jenkins' | `string` | `"ssm-agent"` | no |
 | namespace | Namespace, which could be your organization name or abbreviation, e.g. 'eg' or 'cp' | `string` | n/a | yes |
 | permissions\_boundary | The ARN of the permissions boundary that will be applied to the SSM Agent role. | `string` | `""` | no |
