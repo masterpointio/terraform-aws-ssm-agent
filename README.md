@@ -2,7 +2,11 @@
 
 # terraform-aws-ssm-agent
 
-A Terraform Module to create an SSM Agent EC2 instance (via an ASG) along with its corresponding role and instance profile.
+A Terraform Module to create a simple, autoscaled SSM Agent EC2 instance along with its corresponding IAM instance profile. This can easily be used with SSM Session Manager and other SSM functionality to replace the need for a Bastion host and further secure your cloud environment.
+
+Big shout out to the folks [@cloudposse](https://github.com/cloudposse), who have awesome open source modules which this repo uses heavily!
+
+![SSM Agent Session Manager Example](https://i.imgur.com/lWcRiQf.png)
 
 ## Usage
 
@@ -53,7 +57,7 @@ module "subnets" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| ami | The AMI to use for the SSM Agent EC2 Instance. If not provided, the latest Amazon Linux 2 AMI will be used. Note: This will update periodically as AWS releases updates to their AL2 AMI. | `string` | `""` | no |
+| ami | The AMI to use for the SSM Agent EC2 Instance. If not provided, the latest Amazon Linux 2 AMI will be used. Note: This will update periodically as AWS releases updates to their AL2 AMI. Pin to a specific AMI if you would like to avoid these updates. | `string` | `""` | no |
 | instance\_count | The number of SSM Agent instances you would like to deploy. | `number` | `1` | no |
 | instance\_type | The instance type to use for the SSM Agent EC2 Instnace. | `string` | `"t3.nano"` | no |
 | key\_pair\_name | The name of the key-pair to associate with the SSM Agent instances. This can be (and probably should) left empty unless you specifically plan to use `AWS-StartSSHSession`. | `string` | `null` | no |

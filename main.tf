@@ -3,7 +3,11 @@
  *
  * # terraform-aws-ssm-agent
  *
- * A Terraform Module to create an SSM Agent EC2 instance (via an ASG) along with its corresponding role and instance profile.
+ * A Terraform Module to create a simple, autoscaled SSM Agent EC2 instance along with its corresponding IAM instance profile. This can easily be used with SSM Session Manager and other SSM functionality to replace the need for a Bastion host and further secure your cloud environment.
+ *
+ * Big shout out to the folks [@cloudposse](https://github.com/cloudposse), who have awesome open source modules which this repo uses heavily!
+ *
+ * ![SSM Agent Session Manager Example](https://i.imgur.com/lWcRiQf.png)
  *
  * ## Usage
  *
@@ -36,6 +40,7 @@
  *   nat_instance_enabled = ! var.nat_gateway_enabled
  * }
  * ```
+ *
  */
 
 terraform {
