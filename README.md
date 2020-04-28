@@ -4,7 +4,7 @@
 
 A Terraform Module to create a simple, autoscaled SSM Agent EC2 instance along with its corresponding IAM instance profile. This is intended to be used with SSM Session Manager and other SSM functionality to replace the need for a Bastion host and further secure your cloud environment. This includes an SSM document to enable session logging to S3 and CloudWatch for auditing purposes.
 
-Big shout out to the following projects which this project uses/depends/mentions on!  
+Big shout out to the following projects which this project uses/depends on/mentions:  
 1. [gjbae1212/gossm](https://github.com/gjbae1212/gossm)  
 1. [cloudposse/terraform-null-label](https://github.com/cloudposse/terraform-null-label)  
 1. [cloudposse/terraform-aws-vpc](https://github.com/cloudposse/terraform-aws-vpc)  
@@ -58,7 +58,7 @@ aws ssm start-session --target $INSTANCE_ID
 
 OR
 
-Use this awesome project: [`gossm`](https://github.com/gjbae1212/gossm)
+Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 
 ## Requirements
 
