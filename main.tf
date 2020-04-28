@@ -12,6 +12,7 @@
  * 1. [cloudposse/terraform-aws-dynamic-subnets](https://github.com/cloudposse/terraform-aws-dynamic-subnets)
  * 1. [cloudposse/terraform-aws-kms-key](https://github.com/cloudposse/terraform-aws-kms-key)
  * 1. [cloudposse/terraform-aws-s3-bucket](https://github.com/cloudposse/terraform-aws-s3-bucket)
+ * 1. Cloud Posse's Terratest Setup.
  *
  * ![SSM Agent Session Manager Example](https://i.imgur.com/lWcRiQf.png)
  *
