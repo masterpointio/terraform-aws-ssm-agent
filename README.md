@@ -1,5 +1,7 @@
 [![Masterpoint Logo](https://i.imgur.com/RDLnuQO.png)](https://masterpoint.io)
 
+[![Release](https://img.shields.io/github/release/masterpointio/ecsrun.svg)](https://github.com/masterpointio/ecsrun/releases/latest)
+
 # terraform-aws-ssm-agent
 
 A Terraform Module to create a simple, autoscaled SSM Agent EC2 instance along with its corresponding IAM instance profile. This is intended to be used with SSM Session Manager and other SSM functionality to replace the need for a Bastion host and further secure your cloud environment. This includes an SSM document to enable session logging to S3 and CloudWatch for auditing purposes.
@@ -80,6 +82,7 @@ Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 | ami | The AMI to use for the SSM Agent EC2 Instance. If not provided, the latest Amazon Linux 2 AMI will be used. Note: This will update periodically as AWS releases updates to their AL2 AMI. Pin to a specific AMI if you would like to avoid these updates. | `string` | `""` | no |
 | attributes | Additional attributes (e.g. `1`) | `list(string)` | `[]` | no |
 | cloudwatch\_retention\_in\_days | The number of days to retain session logs in CloudWatch. This is only relevant if the session\_logging\_enabled variable is `true`. | `number` | `365` | no |
+| create\_run\_shell\_document | Whether or not to create the SSM-SessionManagerRunShell SSM Document. | `boolean` | `true` | no |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | `string` | `"-"` | no |
 | environment | Environment, e.g. 'prod', 'staging', 'dev', 'pre-prod', 'UAT' | `string` | `""` | no |
 | instance\_count | The number of SSM Agent instances you would like to deploy. | `number` | `1` | no |
