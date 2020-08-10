@@ -138,6 +138,6 @@ variable "region" {
 
 variable "create_run_shell_document" {
   default     = true
-  type        = boolean
+  type        = bool
   description = "Whether or not to create the SSM-SessionManagerRunShell SSM Document."
 }
