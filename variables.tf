@@ -135,3 +135,9 @@ variable "region" {
   type        = string
   description = "The region to deploy the S3 bucket for session logs. If not supplied, the module will use the current region."
 }
+
+variable "create_run_shell_document" {
+  default     = true
+  type        = boolean
+  description = "Whether or not to create the SSM-SessionManagerRunShell SSM Document."
+}

@@ -321,7 +321,7 @@ resource "aws_cloudwatch_log_group" "session_logging" {
 }
 
 resource "aws_ssm_document" "session_logging" {
-  count = var.session_logging_enabled ? 1 : 0
+  count = var.session_logging_enabled && var.create_run_shell_document ? 1 : 0
 
   name          = "SSM-SessionManagerRunShell"
   document_type = "Session"
