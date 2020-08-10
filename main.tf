@@ -63,13 +63,6 @@
  *
  */
 
-terraform {
-  required_version = ">= 0.12"
-  required_providers {
-    aws = "~> 2.0"
-  }
-}
-
 module "label" {
   source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
   namespace   = var.namespace
