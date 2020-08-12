@@ -4,6 +4,7 @@ variable "namespace" {
 }
 
 variable "stage" {
+  default     = ""
   type        = string
   description = "The environment that this infrastrcuture is being deployed to e.g. dev, stage, or prod"
 }
@@ -15,8 +16,8 @@ variable "name" {
 }
 
 variable "environment" {
-  type        = string
   default     = ""
+  type        = string
   description = "Environment, e.g. 'prod', 'staging', 'dev', 'pre-prod', 'UAT'"
 }
 
