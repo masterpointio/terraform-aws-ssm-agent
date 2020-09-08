@@ -1,3 +1,8 @@
+output "instance_name" {
+  value       = module.label.id
+  description = "The name tag value of the Bastion instance."
+}
+
 output "security_group_id" {
   value       = aws_security_group.default.id
   description = "The ID of the SSM Agent Security Group."
