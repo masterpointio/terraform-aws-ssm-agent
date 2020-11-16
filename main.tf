@@ -238,7 +238,7 @@ module "kms_key" {
   description             = "KMS key for encrypting Session Logs in S3 and CloudWatch."
   deletion_window_in_days = 10
   enable_key_rotation     = true
-  alias                   = "alias/session_logging_key"
+  alias                   = "alias/session_logging_key_${var.environment}"
 
   policy = <<DOC
 {
@@ -325,7 +325,7 @@ resource "aws_cloudwatch_log_group" "session_logging" {
 resource "aws_ssm_document" "session_logging" {
   count = var.session_logging_enabled && var.create_run_shell_document ? 1 : 0
 
-  name          = "SSM-SessionManagerRunShell"
+  name          = "SSM-SessionManagerRunShell-${var.environment}}"
   document_type = "Session"
   tags          = module.logs_label.tags
   content       = <<DOC
