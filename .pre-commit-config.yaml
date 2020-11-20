@@ -2,9 +2,8 @@
 # brew install pre-commit gawk terraform-docs tflint coreutils
 repos:
   - repo: git://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.31.0
+    rev: v1.43.0
     hooks:
       - id: terraform_fmt
       - id: terraform_validate
-      - id: terraform_docs_replace
-        args: ["--with-aggregate-type-defaults", "--sort-inputs-by-required"]
+      - id: terraform_docs

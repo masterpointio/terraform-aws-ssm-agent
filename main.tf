@@ -1,70 +1,3 @@
-/**
- * [![Masterpoint Logo](https://i.imgur.com/RDLnuQO.png)](https://masterpoint.io)
- *
- * [![Release](https://img.shields.io/github/release/masterpointio/ecsrun.svg)](https://github.com/masterpointio/ecsrun/releases/latest)
- *
- * # terraform-aws-ssm-agent
- *
- * A Terraform Module to create a simple, autoscaled SSM Agent EC2 instance along with its corresponding IAM instance profile. This is intended to be used with SSM Session Manager and other SSM functionality to replace the need for a Bastion host and further secure your cloud environment. This includes an SSM document to enable session logging to S3 and CloudWatch for auditing purposes.
- *
- * Big shout out to the following projects which this project uses/depends on/mentions:
- * 1. [gjbae1212/gossm](https://github.com/gjbae1212/gossm)
- * 1. [cloudposse/terraform-null-label](https://github.com/cloudposse/terraform-null-label)
- * 1. [cloudposse/terraform-aws-vpc](https://github.com/cloudposse/terraform-aws-vpc)
- * 1. [cloudposse/terraform-aws-dynamic-subnets](https://github.com/cloudposse/terraform-aws-dynamic-subnets)
- * 1. [cloudposse/terraform-aws-kms-key](https://github.com/cloudposse/terraform-aws-kms-key)
- * 1. [cloudposse/terraform-aws-s3-bucket](https://github.com/cloudposse/terraform-aws-s3-bucket)
- * 1. Cloud Posse's Terratest Setup.
- *
- * ![SSM Agent Session Manager Example](https://i.imgur.com/lWcRiQf.png)
- *
- * ## Usage
- *
- * ### Module Usage:
- *
- * ```hcl
- * module "ssm_agent" {
- *   source     = "git::https://github.com/masterpointio/terraform-aws-ssm-agent.git?ref=tags/0.1.0"
- *   stage      = var.stage
- *   namespace  = var.namespace
- *   vpc_id     = module.vpc.vpc_id
- *   subnet_ids = module.subnets.private_subnet_ids
- * }
- *
- * module "vpc" {
- *   source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.10.0"
- *   namespace  = var.namespace
- *   stage      = var.stage
- *   name       = var.name
- *   cidr_block = "10.0.0.0/16"
- * }
- *
- * module "subnets" {
- *   source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.19.0"
- *   availability_zones   = var.availability_zones
- *   namespace            = var.namespace
- *   stage                = var.stage
- *   vpc_id               = module.vpc.vpc_id
- *   igw_id               = module.vpc.igw_id
- *   cidr_block           = module.vpc.vpc_cidr_block
- *   nat_gateway_enabled  = var.nat_gateway_enabled
- *   nat_instance_enabled = ! var.nat_gateway_enabled
- * }
- * ```
- *
- * ### Connecting to your new SSM Agent:
- *
- * ```bash
- * INSTANCE_ID=$(aws autoscaling describe-auto-scaling-instances | jq --raw-output ".AutoScalingInstances | .[0] | .InstanceId")
- * aws ssm start-session --target $INSTANCE_ID
- * ```
- *
- * OR
- *
- * Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
- *
- */
-
 module "label" {
   source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.19.2"
   namespace   = var.namespace
@@ -279,7 +212,7 @@ DOC
 }
 
 module "logs_bucket" {
-  source  = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=0.20.0"
+  source  = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=0.25.0"
   enabled = var.session_logging_enabled && var.session_logging_bucket_name == ""
 
   # General
@@ -290,7 +223,6 @@ module "logs_bucket" {
   delimiter   = var.delimiter
   attributes  = module.logs_label.attributes
   tags        = var.tags
-  region      = local.region
 
   # Encryption / Security
   acl                          = "private"
@@ -346,8 +278,6 @@ resource "aws_ssm_document" "session_logging" {
 }
 DOC
 }
-
-
 
 ############################
 ## LAUNCH TEMPLATE + ASG ##
