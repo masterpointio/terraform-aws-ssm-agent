@@ -99,7 +99,8 @@ Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 | session\_logging\_enabled | To enable CloudWatch and S3 session logging or not. Note this does not apply to SSH sessions as AWS cannot log those sessions. | `bool` | `true` | no |
 | session\_logging\_encryption\_enabled | To enable CloudWatch and S3 session logging encryption or not. | `bool` | `true` | no |
 | session\_logging\_kms\_key\_arn | BYO KMS Key instead of using the created KMS Key. The session\_logging\_encryption\_enabled variable must still be `true` for this to be applied. | `string` | `""` | no |
-| stage | The environment that this infrastrcuture is being deployed to e.g. dev, stage, or prod | `string` | `""` | no |
+| session\_logging\_kms\_key\_alias | "Alias name for `session_logging` KMS Key. This is only applied if 2 conditions are met: (1) `session_logging_kms_key_arn` is unset, (2) `session_logging_encryption_enabled` = true." | `string` | `"alias/session_logging"` | no |
+| stage | The environment that this infrastructure is being deployed to e.g. dev, stage, or prod | `string` | `""` | no |
 | subnet\_ids | The Subnet IDs which the SSM Agent will run in. These *should* be private subnets. | `list(string)` | n/a | yes |
 | tags | Additional tags (e.g. `map('BusinessUnit','XYZ')` | `map(string)` | `{}` | no |
 | user\_data | The user\_data to use for the SSM Agent EC2 instance. You can use this to automate installation of psql or other required command line tools. | `string` | `"#!/bin/bash\n# NOTE: Since we're using a latest Amazon Linux AMI, we shouldn't need this,\n# but we'll update it to be sure.\ncd /tmp\nsudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpmnsudo systemctl enable amazon-ssm-agent\nsudo systemctl start amazon-ssm-agent\n"` | no |
