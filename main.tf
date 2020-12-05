@@ -39,8 +39,10 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
-  region     = coalesce(var.region, data.aws_region.current.name)
-  account_id = data.aws_caller_identity.current.account_id
+  region                        = coalesce(var.region, data.aws_region.current.name)
+  account_id                    = data.aws_caller_identity.current.account_id
+  session_logging_kms_key_alias = var.session_logging_kms_key_alias
+
 }
 
 #####################
@@ -171,7 +173,7 @@ module "kms_key" {
   description             = "KMS key for encrypting Session Logs in S3 and CloudWatch."
   deletion_window_in_days = 10
   enable_key_rotation     = true
-  alias                   = "alias/session_logging_key"
+  alias                   = local.session_logging_kms_key_alias
 
   policy = <<DOC
 {
