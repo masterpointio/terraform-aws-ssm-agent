@@ -171,7 +171,7 @@ module "kms_key" {
   description             = "KMS key for encrypting Session Logs in S3 and CloudWatch."
   deletion_window_in_days = 10
   enable_key_rotation     = true
-  alias                   = "alias/session_logging_key"
+  alias                   = var.session_logging_kms_key_alias
 
   policy = <<DOC
 {
