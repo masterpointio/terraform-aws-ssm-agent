@@ -84,6 +84,13 @@ variable "session_logging_kms_key_arn" {
   description = "BYO KMS Key instead of using the created KMS Key. The session_logging_encryption_enabled variable must still be `true` for this to be applied."
 }
 
+variable "session_logging_kms_key_alias" {
+  default     = "alias/session_logging"
+  type        = string
+  description = "Alias name for `session_logging` KMS Key. This is only applied if 2 conditions are met: (1) `session_logging_kms_key_arn` is unset, (2) `session_logging_encryption_enabled` = true."
+}
+
+
 variable "session_logging_bucket_name" {
   default     = ""
   type        = string
