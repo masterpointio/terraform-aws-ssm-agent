@@ -95,7 +95,7 @@ Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 | namespace | Namespace, which could be your organization name or abbreviation, e.g. 'eg' or 'cp' | `string` | n/a | yes |
 | permissions\_boundary | The ARN of the permissions boundary that will be applied to the SSM Agent role. | `string` | `""` | no |
 | region | The region to deploy the S3 bucket for session logs. If not supplied, the module will use the current region. | `string` | `""` | no |
-| security_groups | Additional security groups to attach to SSM agents | `list(string)` | `[]` | no|
+| additional_security_group_ids | Additional security groups to attach to SSM agents | `list(string)` | `[]` | no|
 | session\_logging\_bucket\_name | The name of the S3 Bucket to ship session logs to. This will remove creation of an independent session logging bucket. This is only relevant if the session\_logging\_enabled variable is `true`. | `string` | `""` | no |
 | session\_logging\_enabled | To enable CloudWatch and S3 session logging or not. Note this does not apply to SSH sessions as AWS cannot log those sessions. | `bool` | `true` | no |
 | session\_logging\_encryption\_enabled | To enable CloudWatch and S3 session logging encryption or not. | `bool` | `true` | no |

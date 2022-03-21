@@ -171,7 +171,7 @@ module "kms_key" {
   description             = "KMS key for encrypting Session Logs in S3 and CloudWatch."
   deletion_window_in_days = 10
   enable_key_rotation     = true
-  alias                   = "alias/session_logging_key_${var.stage}"
+  alias                   = "alias/session_logging_key"
 
   policy = <<DOC
 {
@@ -257,7 +257,7 @@ resource "aws_cloudwatch_log_group" "session_logging" {
 resource "aws_ssm_document" "session_logging" {
   count = var.session_logging_enabled && var.create_run_shell_document ? 1 : 0
 
-  name          = "SSM-SessionManagerRunShell-${var.stage}"
+  name          = "SSM-SessionManagerRunShell"
   document_type = "Session"
   tags          = module.logs_label.tags
   content       = <<DOC
@@ -297,7 +297,7 @@ resource "aws_launch_template" "default" {
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
-    security_groups             = concat(var.security_groups, [aws_security_group.default.id])
+    security_groups             = concat(var.additional_security_group_ids, [aws_security_group.default.id])
   }
 
   iam_instance_profile {
