@@ -56,6 +56,12 @@ variable "key_pair_name" {
   description = "The name of the key-pair to associate with the SSM Agent instances. This can be (and probably should) left empty unless you specifically plan to use `AWS-StartSSHSession`."
 }
 
+variable "additional_security_group_ids" {
+  description = "Security groups that will be attached to the app instances"
+  type        = list(string)
+  default     = []
+}
+
 ######################
 ## SESSION LOGGING ##
 ####################

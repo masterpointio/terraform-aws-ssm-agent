@@ -295,7 +295,7 @@ resource "aws_launch_template" "default" {
   network_interfaces {
     associate_public_ip_address = false
     delete_on_termination       = true
-    security_groups             = [aws_security_group.default.id]
+    security_groups             = concat(var.additional_security_group_ids, [aws_security_group.default.id])
   }
 
   iam_instance_profile {
