@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 module "vpc" {
-  source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.10.0"
+  source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.26.1"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
@@ -11,7 +11,7 @@ module "vpc" {
 }
 
 module "subnets" {
-  source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.19.0"
+  source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.39.3"
   availability_zones   = var.availability_zones
   namespace            = var.namespace
   stage                = var.stage
@@ -19,7 +19,7 @@ module "subnets" {
   igw_id               = module.vpc.igw_id
   cidr_block           = module.vpc.vpc_cidr_block
   nat_gateway_enabled  = var.nat_gateway_enabled
-  nat_instance_enabled = ! var.nat_gateway_enabled
+  nat_instance_enabled = !var.nat_gateway_enabled
 }
 
 module "ssm_agent" {

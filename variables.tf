@@ -1,44 +1,3 @@
-variable "namespace" {
-  type        = string
-  description = "Namespace, which could be your organization name or abbreviation, e.g. 'eg' or 'cp'"
-}
-
-variable "stage" {
-  default     = ""
-  type        = string
-  description = "The environment that this infrastrcuture is being deployed to e.g. dev, stage, or prod"
-}
-
-variable "name" {
-  default     = "ssm-agent"
-  type        = string
-  description = "Solution name, e.g. 'app' or 'jenkins'"
-}
-
-variable "environment" {
-  default     = ""
-  type        = string
-  description = "Environment, e.g. 'prod', 'staging', 'dev', 'pre-prod', 'UAT'"
-}
-
-variable "delimiter" {
-  default     = "-"
-  type        = string
-  description = "Delimiter to be used between `namespace`, `stage`, `name` and `attributes`"
-}
-
-variable "attributes" {
-  default     = []
-  type        = list(string)
-  description = "Additional attributes (e.g. `1`)"
-}
-
-variable "tags" {
-  default     = {}
-  type        = map(string)
-  description = "Additional tags (e.g. `map('BusinessUnit','XYZ')`"
-}
-
 variable "vpc_id" {
   type        = string
   description = "The ID of the VPC which the EC2 Instance will run in."
@@ -130,6 +89,13 @@ variable "session_logging_kms_key_arn" {
   type        = string
   description = "BYO KMS Key instead of using the created KMS Key. The session_logging_encryption_enabled variable must still be `true` for this to be applied."
 }
+
+variable "session_logging_kms_key_alias" {
+  default     = "alias/session_logging"
+  type        = string
+  description = "Alias name for `session_logging` KMS Key. This is only applied if 2 conditions are met: (1) `session_logging_kms_key_arn` is unset, (2) `session_logging_encryption_enabled` = true."
+}
+
 
 variable "session_logging_bucket_name" {
   default     = ""

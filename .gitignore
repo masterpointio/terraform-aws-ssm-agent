@@ -29,4 +29,8 @@ override.tf.json
 # example: *tfplan*
 *.plan
 
+# Ignore IntelliJ configuration
 /.idea/
+
+# Ignore lock files
+.terraform.lock.hcl

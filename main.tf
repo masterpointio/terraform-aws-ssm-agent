@@ -1,12 +1,8 @@
 module "label" {
-  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
-  namespace   = var.namespace
-  stage       = var.stage
-  name        = var.name
-  environment = var.environment
-  delimiter   = var.delimiter
-  attributes  = var.attributes
-  tags        = var.tags
+  source  = "cloudposse/label/null"
+  version = "0.24.1"
+
+  context = module.this.context
 
   additional_tag_map = {
     propagate_at_launch = "true"
@@ -14,25 +10,21 @@ module "label" {
 }
 
 module "role_label" {
-  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
-  namespace   = var.namespace
-  stage       = var.stage
-  name        = var.name
-  environment = var.environment
-  delimiter   = var.delimiter
-  attributes  = compact(concat(["role"], var.attributes))
-  tags        = var.tags
+  source  = "cloudposse/label/null"
+  version = "0.24.1"
+
+  attributes = compact(concat(["role"], var.attributes))
+
+  context = module.this.context
 }
 
 module "logs_label" {
-  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
-  namespace   = var.namespace
-  stage       = var.stage
-  name        = var.name
-  environment = var.environment
-  delimiter   = var.delimiter
-  attributes  = compact(concat(["logs"], var.attributes))
-  tags        = var.tags
+  source  = "cloudposse/label/null"
+  version = "0.24.1"
+
+  attributes = compact(concat(["logs"], var.attributes))
+
+  context = module.this.context
 }
 
 data "aws_region" "current" {}
@@ -41,6 +33,9 @@ data "aws_caller_identity" "current" {}
 locals {
   region     = coalesce(var.region, data.aws_region.current.name)
   account_id = data.aws_caller_identity.current.account_id
+
+  session_logging_bucket_name = try(coalesce(var.session_logging_bucket_name, module.logs_label.id), "")
+  session_logging_kms_key_arn = try(coalesce(var.session_logging_kms_key_arn, module.kms_key.key_arn), "")
 }
 
 #####################
@@ -61,7 +56,7 @@ data "aws_iam_policy_document" "default" {
 }
 
 data "aws_s3_bucket" "logs_bucket" {
-  bucket = coalesce(var.session_logging_bucket_name, module.logs_bucket.bucket_id)
+  bucket = try(coalesce(var.session_logging_bucket_name, module.logs_bucket.bucket_id), "")
 }
 
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/getting-started-create-iam-instance-profile.html#create-iam-instance-profile-ssn-logging
@@ -157,21 +152,16 @@ resource "aws_security_group_rule" "allow_all_egress" {
 #####################
 
 module "kms_key" {
-  source  = "git::https://github.com/cloudposse/terraform-aws-kms-key.git?ref=tags/0.7.0"
-  enabled = var.session_logging_enabled && var.session_logging_encryption_enabled && var.session_logging_kms_key_arn == ""
+  source  = "cloudposse/kms-key/aws"
+  version = "0.10.0"
 
-  namespace   = var.namespace
-  stage       = var.stage
-  name        = var.name
-  environment = var.environment
-  delimiter   = var.delimiter
-  attributes  = module.logs_label.attributes
-  tags        = var.tags
+  enabled = var.session_logging_enabled && var.session_logging_encryption_enabled && var.session_logging_kms_key_arn == ""
+  context = module.logs_label.context
 
   description             = "KMS key for encrypting Session Logs in S3 and CloudWatch."
   deletion_window_in_days = 10
   enable_key_rotation     = true
-  alias                   = "alias/session_logging_key"
+  alias                   = var.session_logging_kms_key_alias
 
   policy = <<DOC
 {
@@ -212,37 +202,45 @@ DOC
 }
 
 module "logs_bucket" {
-  source  = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=0.25.0"
-  enabled = var.session_logging_enabled && var.session_logging_bucket_name == ""
+  source  = "cloudposse/s3-bucket/aws"
+  version = "0.40.1"
 
-  # General
-  namespace   = var.namespace
-  stage       = var.stage
-  name        = var.name
-  environment = var.environment
-  delimiter   = var.delimiter
-  attributes  = module.logs_label.attributes
-  tags        = var.tags
+  enabled = var.session_logging_enabled && var.session_logging_bucket_name == ""
+  context = module.logs_label.context
 
   # Encryption / Security
   acl                          = "private"
   sse_algorithm                = "aws:kms"
-  kms_master_key_arn           = coalesce(var.session_logging_kms_key_arn, module.kms_key.key_arn)
+  kms_master_key_arn           = local.session_logging_kms_key_arn
   allow_encrypted_uploads_only = false
   force_destroy                = true
 
   # Feature enablement
-  user_enabled              = false
-  versioning_enabled        = true
-  lifecycle_rule_enabled    = true
-  enable_glacier_transition = true
+  user_enabled       = false
+  versioning_enabled = true
 
-  # Lifecycle Transitions
-  noncurrent_version_transition_days = 30
-  noncurrent_version_expiration_days = 365
-  standard_transition_days           = 30
-  glacier_transition_days            = 90
-  expiration_days                    = 0
+  lifecycle_rules = [
+    {
+      prefix  = null
+      enabled = true
+      tags    = {}
+
+      enable_glacier_transition        = true
+      enable_deeparchive_transition    = false
+      enable_standard_ia_transition    = false
+      enable_current_object_expiration = false
+
+      abort_incomplete_multipart_upload_days         = null
+      noncurrent_version_glacier_transition_days     = 30
+      noncurrent_version_deeparchive_transition_days = 0
+      noncurrent_version_expiration_days             = 365
+
+      standard_transition_days    = 30
+      glacier_transition_days     = 90
+      deeparchive_transition_days = 0
+      expiration_days             = 0
+    },
+  ]
 }
 
 resource "aws_cloudwatch_log_group" "session_logging" {
@@ -250,7 +248,7 @@ resource "aws_cloudwatch_log_group" "session_logging" {
 
   name              = module.logs_label.id
   retention_in_days = var.cloudwatch_retention_in_days
-  kms_key_id        = var.session_logging_encryption_enabled ? coalesce(var.session_logging_kms_key_arn, module.kms_key.key_arn) : ""
+  kms_key_id        = var.session_logging_encryption_enabled ? local.session_logging_kms_key_arn : ""
   tags              = module.logs_label.tags
 }
 
@@ -266,12 +264,12 @@ resource "aws_ssm_document" "session_logging" {
   "description": "Document to hold regional settings for Session Manager",
   "sessionType": "Standard_Stream",
   "inputs": {
-    "s3BucketName": "${coalesce(var.session_logging_bucket_name, module.logs_label.id)}",
+    "s3BucketName": "${local.session_logging_bucket_name}",
     "s3KeyPrefix": "logs/",
     "s3EncryptionEnabled": true,
     "cloudWatchLogGroupName": "${module.logs_label.id}",
     "cloudWatchEncryptionEnabled": true,
-    "kmsKeyId": "${coalesce(var.session_logging_kms_key_arn, module.kms_key.key_arn)}",
+    "kmsKeyId": "${local.session_logging_kms_key_arn}",
     "runAsEnabled": false,
     "runAsDefaultUser": ""
   }
