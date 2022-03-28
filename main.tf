@@ -255,7 +255,7 @@ resource "aws_cloudwatch_log_group" "session_logging" {
 resource "aws_ssm_document" "session_logging" {
   count = var.session_logging_enabled && var.create_run_shell_document ? 1 : 0
 
-  name          = "SSM-SessionManagerRunShell"
+  name          = var.session_logging_ssm_document_name
   document_type = "Session"
   tags          = module.logs_label.tags
   content       = <<DOC

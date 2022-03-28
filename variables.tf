@@ -114,3 +114,9 @@ variable "create_run_shell_document" {
   type        = bool
   description = "Whether or not to create the SSM-SessionManagerRunShell SSM Document."
 }
+
+variable "session_logging_ssm_document_name" {
+  default     = "SSM-SessionManagerRunShell"
+  type        = string
+  description = "Name for `session_logging` SSM document. This is only applied if 2 conditions are met: (1) `session_logging_enabled` = true, (2) `create_run_shell_document` = true."
+}
