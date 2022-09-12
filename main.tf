@@ -56,11 +56,13 @@ data "aws_iam_policy_document" "default" {
 }
 
 data "aws_s3_bucket" "logs_bucket" {
+  count  = var.session_logging_enabled ? 1 : 0
   bucket = try(coalesce(var.session_logging_bucket_name, module.logs_bucket.bucket_id), "")
 }
 
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/getting-started-create-iam-instance-profile.html#create-iam-instance-profile-ssn-logging
 data "aws_iam_policy_document" "session_logging" {
+  count = var.session_logging_enabled ? 1 : 0
 
   statement {
     sid    = "SSMAgentSessionAllowS3Logging"
@@ -68,7 +70,7 @@ data "aws_iam_policy_document" "session_logging" {
     actions = [
       "s3:PutObject"
     ]
-    resources = ["${data.aws_s3_bucket.logs_bucket.arn}/*"]
+    resources = ["${join("", data.aws_s3_bucket.logs_bucket.*.arn)}/*"]
   }
 
   statement {
@@ -119,7 +121,7 @@ resource "aws_iam_role_policy" "session_logging" {
 
   name   = "${module.role_label.id}-session-logging"
   role   = aws_iam_role.default.name
-  policy = data.aws_iam_policy_document.session_logging.json
+  policy = join("", data.aws_iam_policy_document.session_logging.*.json)
 }
 
 resource "aws_iam_instance_profile" "default" {
