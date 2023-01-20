@@ -1,41 +1,24 @@
-module "label" {
+module "asg_label" {
   source  = "cloudposse/label/null"
-  version = "0.24.1"
+  version = "0.25.0"
 
   context = module.this.context
 
+  # This tag attribute is required.
+  # See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#propagate_at_launch
   additional_tag_map = {
     propagate_at_launch = "true"
   }
 }
 
-module "role_label" {
-  source  = "cloudposse/label/null"
-  version = "0.24.1"
-
-  attributes = compact(concat(["role"], var.attributes))
-
-  context = module.this.context
-}
-
-module "logs_label" {
-  source  = "cloudposse/label/null"
-  version = "0.24.1"
-
-  attributes = compact(concat(["logs"], var.attributes))
-
-  context = module.this.context
-}
-
-data "aws_region" "current" {}
-data "aws_caller_identity" "current" {}
-
 locals {
   region     = coalesce(var.region, data.aws_region.current.name)
   account_id = data.aws_caller_identity.current.account_id
 
-  session_logging_bucket_name = try(coalesce(var.session_logging_bucket_name, module.logs_label.id), "")
+  session_logging_bucket_name = try(coalesce(var.session_logging_bucket_name, "${module.this.id}-logs"), "")
   session_logging_kms_key_arn = try(coalesce(var.session_logging_kms_key_arn, module.kms_key.key_arn), "")
+
+  logs_bucket_enabled = var.session_logging_enabled && length(var.session_logging_bucket_name) == 0
 }
 
 #####################
@@ -105,10 +88,10 @@ data "aws_iam_policy_document" "session_logging" {
 }
 
 resource "aws_iam_role" "default" {
-  name                 = module.role_label.id
+  name                 = module.this.id
   assume_role_policy   = data.aws_iam_policy_document.default.json
   permissions_boundary = var.permissions_boundary
-  tags                 = module.role_label.tags
+  tags                 = module.this.tags
 }
 
 resource "aws_iam_role_policy_attachment" "default" {
@@ -119,13 +102,13 @@ resource "aws_iam_role_policy_attachment" "default" {
 resource "aws_iam_role_policy" "session_logging" {
   count = var.session_logging_enabled ? 1 : 0
 
-  name   = "${module.role_label.id}-session-logging"
+  name   = module.this.id
   role   = aws_iam_role.default.name
   policy = join("", data.aws_iam_policy_document.session_logging.*.json)
 }
 
 resource "aws_iam_instance_profile" "default" {
-  name = module.role_label.id
+  name = module.this.id
   role = aws_iam_role.default.name
 }
 
@@ -135,9 +118,9 @@ resource "aws_iam_instance_profile" "default" {
 
 resource "aws_security_group" "default" {
   vpc_id      = var.vpc_id
-  name        = module.label.id
+  name        = module.this.id
   description = "Allow ALL egress from SSM Agent."
-  tags        = module.label.tags
+  tags        = module.this.tags
 }
 
 resource "aws_security_group_rule" "allow_all_egress" {
@@ -155,10 +138,10 @@ resource "aws_security_group_rule" "allow_all_egress" {
 
 module "kms_key" {
   source  = "cloudposse/kms-key/aws"
-  version = "0.10.0"
+  version = "0.12.1"
 
-  enabled = var.session_logging_enabled && var.session_logging_encryption_enabled && var.session_logging_kms_key_arn == ""
-  context = module.logs_label.context
+  enabled = var.session_logging_enabled && var.session_logging_encryption_enabled && length(var.session_logging_kms_key_arn) == 0
+  context = module.this.context
 
   description             = "KMS key for encrypting Session Logs in S3 and CloudWatch."
   deletion_window_in_days = 10
@@ -168,7 +151,7 @@ module "kms_key" {
   policy = <<DOC
 {
   "Version" : "2012-10-17",
-  "Id" : "${module.logs_label.id}-policy",
+  "Id" : "${module.this.id}",
   "Statement" : [
     {
       "Sid" : "Enable IAM User Permissions",
@@ -194,7 +177,7 @@ module "kms_key" {
       "Resource": "*",
       "Condition": {
         "ArnLike": {
-          "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:${local.region}:${local.account_id}:log-group:${module.logs_label.id}"
+          "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:${local.region}:${local.account_id}:log-group:${module.this.id}"
         }
       }
     }
@@ -207,8 +190,10 @@ module "logs_bucket" {
   source  = "cloudposse/s3-bucket/aws"
   version = "0.40.1"
 
-  enabled = var.session_logging_enabled && var.session_logging_bucket_name == ""
-  context = module.logs_label.context
+  enabled = local.logs_bucket_enabled
+  context = module.this.context
+
+  bucket_name = local.session_logging_bucket_name
 
   # Encryption / Security
   acl                          = "private"
@@ -248,10 +233,10 @@ module "logs_bucket" {
 resource "aws_cloudwatch_log_group" "session_logging" {
   count = var.session_logging_enabled ? 1 : 0
 
-  name              = module.logs_label.id
+  name              = module.this.id
   retention_in_days = var.cloudwatch_retention_in_days
   kms_key_id        = var.session_logging_encryption_enabled ? local.session_logging_kms_key_arn : ""
-  tags              = module.logs_label.tags
+  tags              = module.this.tags
 }
 
 resource "aws_ssm_document" "session_logging" {
@@ -259,7 +244,7 @@ resource "aws_ssm_document" "session_logging" {
 
   name          = var.session_logging_ssm_document_name
   document_type = "Session"
-  tags          = module.logs_label.tags
+  tags          = module.this.tags
   content       = <<DOC
 {
   "schemaVersion": "1.0",
@@ -269,7 +254,7 @@ resource "aws_ssm_document" "session_logging" {
     "s3BucketName": "${local.session_logging_bucket_name}",
     "s3KeyPrefix": "logs/",
     "s3EncryptionEnabled": true,
-    "cloudWatchLogGroupName": "${module.logs_label.id}",
+    "cloudWatchLogGroupName": "${module.this.id}",
     "cloudWatchEncryptionEnabled": true,
     "kmsKeyId": "${local.session_logging_kms_key_arn}",
     "runAsEnabled": false,
@@ -284,8 +269,8 @@ DOC
 ##########################
 
 resource "aws_launch_template" "default" {
-  name_prefix   = module.label.id
-  image_id      = var.ami != "" ? var.ami : data.aws_ami.amazon_linux_2.id
+  name_prefix   = module.this.id
+  image_id      = length(var.ami) > 0 ? var.ami : data.aws_ami.amazon_linux_2.id
   instance_type = var.instance_type
   key_name      = var.key_pair_name
   user_data     = base64encode(var.user_data)
@@ -306,12 +291,12 @@ resource "aws_launch_template" "default" {
 
   tag_specifications {
     resource_type = "instance"
-    tags          = module.label.tags
+    tags          = module.this.tags
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags          = module.label.tags
+    tags          = module.this.tags
   }
 
   lifecycle {
@@ -320,17 +305,18 @@ resource "aws_launch_template" "default" {
 }
 
 resource "aws_autoscaling_group" "default" {
-  name_prefix = "${module.label.id}-asg"
-  tags        = module.label.tags_as_list_of_maps
+  name_prefix = module.this.id
+  tags        = module.asg_label.tags_as_list_of_maps
 
   launch_template {
     id      = aws_launch_template.default.id
     version = "$Latest"
   }
 
-  max_size         = var.instance_count
-  min_size         = var.instance_count
-  desired_capacity = var.instance_count
+  max_size              = var.instance_count
+  min_size              = var.instance_count
+  desired_capacity      = var.instance_count
+  max_instance_lifetime = var.max_instance_lifetime
 
   vpc_zone_identifier = var.subnet_ids
 
