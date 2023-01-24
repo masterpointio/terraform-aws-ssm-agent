@@ -2,7 +2,8 @@ module "asg_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
 
-  context = module.this.context
+  context    = module.this.context
+  attributes = compact(concat(["asg"], var.attributes))
 
   # This tag attribute is required.
   # See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#propagate_at_launch
@@ -11,11 +12,27 @@ module "asg_label" {
   }
 }
 
+module "role_label" {
+  source  = "cloudposse/label/null"
+  version = "0.25.0"
+
+  context    = module.this.context
+  attributes = compact(concat(["role"], var.attributes))
+}
+
+module "logs_label" {
+  source  = "cloudposse/label/null"
+  version = "0.25.0"
+
+  context    = module.this.context
+  attributes = compact(concat(["logs"], var.attributes))
+}
+
 locals {
   region     = coalesce(var.region, data.aws_region.current.name)
   account_id = data.aws_caller_identity.current.account_id
 
-  session_logging_bucket_name = try(coalesce(var.session_logging_bucket_name, "${module.this.id}-logs"), "")
+  session_logging_bucket_name = try(coalesce(var.session_logging_bucket_name, module.logs_label.id), "")
   session_logging_kms_key_arn = try(coalesce(var.session_logging_kms_key_arn, module.kms_key.key_arn), "")
 
   logs_bucket_enabled = var.session_logging_enabled && length(var.session_logging_bucket_name) == 0
@@ -88,10 +105,10 @@ data "aws_iam_policy_document" "session_logging" {
 }
 
 resource "aws_iam_role" "default" {
-  name                 = module.this.id
+  name                 = module.role_label.id
   assume_role_policy   = data.aws_iam_policy_document.default.json
   permissions_boundary = var.permissions_boundary
-  tags                 = module.this.tags
+  tags                 = module.role_label.tags
 }
 
 resource "aws_iam_role_policy_attachment" "default" {
@@ -102,13 +119,13 @@ resource "aws_iam_role_policy_attachment" "default" {
 resource "aws_iam_role_policy" "session_logging" {
   count = var.session_logging_enabled ? 1 : 0
 
-  name   = module.this.id
+  name   = "${module.role_label.id}-session-logging"
   role   = aws_iam_role.default.name
   policy = join("", data.aws_iam_policy_document.session_logging.*.json)
 }
 
 resource "aws_iam_instance_profile" "default" {
-  name = module.this.id
+  name = module.role_label.id
   role = aws_iam_role.default.name
 }
 
@@ -141,7 +158,7 @@ module "kms_key" {
   version = "0.12.1"
 
   enabled = var.session_logging_enabled && var.session_logging_encryption_enabled && length(var.session_logging_kms_key_arn) == 0
-  context = module.this.context
+  context = module.logs_label.context
 
   description             = "KMS key for encrypting Session Logs in S3 and CloudWatch."
   deletion_window_in_days = 10
@@ -151,7 +168,7 @@ module "kms_key" {
   policy = <<DOC
 {
   "Version" : "2012-10-17",
-  "Id" : "${module.this.id}",
+  "Id" : "${module.logs_label.id}-policy",
   "Statement" : [
     {
       "Sid" : "Enable IAM User Permissions",
@@ -177,7 +194,7 @@ module "kms_key" {
       "Resource": "*",
       "Condition": {
         "ArnLike": {
-          "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:${local.region}:${local.account_id}:log-group:${module.this.id}"
+          "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:${local.region}:${local.account_id}:log-group:${module.logs_label.id}"
         }
       }
     }
@@ -191,9 +208,7 @@ module "logs_bucket" {
   version = "0.40.1"
 
   enabled = local.logs_bucket_enabled
-  context = module.this.context
-
-  bucket_name = local.session_logging_bucket_name
+  context = module.logs_label.context
 
   # Encryption / Security
   acl                          = "private"
@@ -233,10 +248,10 @@ module "logs_bucket" {
 resource "aws_cloudwatch_log_group" "session_logging" {
   count = var.session_logging_enabled ? 1 : 0
 
-  name              = module.this.id
+  name              = module.logs_label.id
   retention_in_days = var.cloudwatch_retention_in_days
   kms_key_id        = var.session_logging_encryption_enabled ? local.session_logging_kms_key_arn : ""
-  tags              = module.this.tags
+  tags              = module.logs_label.tags
 }
 
 resource "aws_ssm_document" "session_logging" {
@@ -244,7 +259,7 @@ resource "aws_ssm_document" "session_logging" {
 
   name          = var.session_logging_ssm_document_name
   document_type = "Session"
-  tags          = module.this.tags
+  tags          = module.logs_label.tags
   content       = <<DOC
 {
   "schemaVersion": "1.0",
@@ -305,7 +320,7 @@ resource "aws_launch_template" "default" {
 }
 
 resource "aws_autoscaling_group" "default" {
-  name_prefix = module.this.id
+  name_prefix = module.asg_label.id
   tags        = module.asg_label.tags_as_list_of_maps
 
   launch_template {
@@ -313,10 +328,9 @@ resource "aws_autoscaling_group" "default" {
     version = "$Latest"
   }
 
-  max_size              = var.instance_count
-  min_size              = var.instance_count
-  desired_capacity      = var.instance_count
-  max_instance_lifetime = var.max_instance_lifetime
+  max_size         = var.instance_count
+  min_size         = var.instance_count
+  desired_capacity = var.instance_count
 
   vpc_zone_identifier = var.subnet_ids
 

@@ -62,12 +62,6 @@ variable "additional_security_group_ids" {
   default     = []
 }
 
-variable "max_instance_lifetime" {
-  description = "Maximum amount of time, in seconds, that an instance can be in service, values must be either equal to 0 or between 86400 and 31536000 seconds."
-  type        = number
-  default     = 0
-}
-
 ######################
 ## SESSION LOGGING ##
 ####################
