@@ -174,7 +174,7 @@ module "kms_key" {
       "Sid" : "Enable IAM User Permissions",
       "Effect" : "Allow",
       "Principal" : {
-        "AWS" : "*"
+        "AWS" : "arn:aws:iam::${local.account_id}:root"
       },
       "Action" : "kms:*",
       "Resource" : "*"
