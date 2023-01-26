@@ -1,5 +1,5 @@
 output "instance_name" {
-  value       = module.label.id
+  value       = module.this.id
   description = "The name tag value of the Bastion instance."
 }
 
@@ -24,11 +24,11 @@ output "role_id" {
 }
 
 output "session_logging_bucket_id" {
-  value       = var.session_logging_enabled && var.session_logging_bucket_name == "" ? join("", data.aws_s3_bucket.logs_bucket.*.id) : ""
+  value       = local.logs_bucket_enabled ? join("", data.aws_s3_bucket.logs_bucket.*.id) : ""
   description = "The ID of the SSM Agent Session Logging S3 Bucket."
 }
 
 output "session_logging_bucket_arn" {
-  value       = var.session_logging_enabled && var.session_logging_bucket_name == "" ? join("", data.aws_s3_bucket.logs_bucket.*.arn) : ""
+  value       = local.logs_bucket_enabled ? join("", data.aws_s3_bucket.logs_bucket.*.arn) : ""
   description = "The ARN of the SSM Agent Session Logging S3 Bucket."
 }

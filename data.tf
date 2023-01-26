@@ -1,3 +1,6 @@
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
 # Most recent Amazon Linux 2 AMI
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
