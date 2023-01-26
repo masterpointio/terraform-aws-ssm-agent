@@ -2,8 +2,7 @@ module "asg_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
 
-  context    = module.this.context
-  attributes = compact(concat(["asg"], var.attributes))
+  context = module.this.context
 
   # This tag attribute is required.
   # See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#propagate_at_launch
@@ -320,7 +319,7 @@ resource "aws_launch_template" "default" {
 }
 
 resource "aws_autoscaling_group" "default" {
-  name_prefix = module.asg_label.id
+  name_prefix = "${module.asg_label.id}-asg"
   tags        = module.asg_label.tags_as_list_of_maps
 
   launch_template {
