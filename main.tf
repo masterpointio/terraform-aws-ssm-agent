@@ -1,16 +1,3 @@
-module "asg_label" {
-  source  = "cloudposse/label/null"
-  version = "0.25.0"
-
-  context = module.this.context
-
-  # This tag attribute is required.
-  # See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#propagate_at_launch
-  additional_tag_map = {
-    propagate_at_launch = "true"
-  }
-}
-
 module "role_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
@@ -331,9 +318,15 @@ resource "aws_launch_template" "default" {
 }
 
 resource "aws_autoscaling_group" "default" {
-  name_prefix = "${module.asg_label.id}-asg"
-  tags        = module.asg_label.tags_as_list_of_maps
-
+  name_prefix = "${module.this.id}-asg"
+  dynamic "tag" {
+    for_each = module.this.tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
   launch_template {
     id      = aws_launch_template.default.id
     version = "$Latest"
