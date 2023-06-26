@@ -222,24 +222,11 @@ module "logs_bucket" {
     noncurrent_version_transition = [{
       noncurrent_days = 30
       storage_class   = "GLACIER"
-      },
-      {
-        noncurrent_days = 0
-        storage_class   = "DEEP_ARCHIVE"
-    }]
+    }, ]
     transition = [{
-      days          = 30
-      storage_class = "STANDARD_IA"
-      },
-      {
-        days          = 90
-        storage_class = "GLACIER"
-      },
-      {
-        days          = 0
-        storage_class = "DEEP_ARCHIVE"
-
-    }]
+      days          = 90
+      storage_class = "GLACIER"
+    }, ]
   }]
 }
 
