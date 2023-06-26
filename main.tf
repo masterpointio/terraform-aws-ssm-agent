@@ -1,16 +1,3 @@
-module "asg_label" {
-  source  = "cloudposse/label/null"
-  version = "0.25.0"
-
-  context = module.this.context
-
-  # This tag attribute is required.
-  # See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#propagate_at_launch
-  additional_tag_map = {
-    propagate_at_launch = "true"
-  }
-}
-
 module "role_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
@@ -204,7 +191,7 @@ DOC
 
 module "logs_bucket" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "0.40.1"
+  version = "3.1.2"
 
   enabled = local.logs_bucket_enabled
   context = module.logs_label.context
@@ -220,28 +207,40 @@ module "logs_bucket" {
   user_enabled       = false
   versioning_enabled = true
 
-  lifecycle_rules = [
-    {
-      prefix  = null
-      enabled = true
-      tags    = {}
+  lifecycle_configuration_rules = [{
+    enabled                                = true
+    id                                     = module.logs_label.id
+    abort_incomplete_multipart_upload_days = 90
+    filter_and                             = null
 
-      enable_glacier_transition        = true
-      enable_deeparchive_transition    = false
-      enable_standard_ia_transition    = false
-      enable_current_object_expiration = false
+    expiration = {
+      days = 0
+    }
+    noncurrent_version_expiration = {
+      noncurrent_days = 365
+    }
+    noncurrent_version_transition = [{
+      noncurrent_days = 30
+      storage_class   = "GLACIER"
+      },
+      {
+        noncurrent_days = 0
+        storage_class   = "DEEP_ARCHIVE"
+    }]
+    transition = [{
+      days          = 30
+      storage_class = "STANDARD_IA"
+      },
+      {
+        days          = 90
+        storage_class = "GLACIER"
+      },
+      {
+        days          = 0
+        storage_class = "DEEP_ARCHIVE"
 
-      abort_incomplete_multipart_upload_days         = null
-      noncurrent_version_glacier_transition_days     = 30
-      noncurrent_version_deeparchive_transition_days = 0
-      noncurrent_version_expiration_days             = 365
-
-      standard_transition_days    = 30
-      glacier_transition_days     = 90
-      deeparchive_transition_days = 0
-      expiration_days             = 0
-    },
-  ]
+    }]
+  }]
 }
 
 resource "aws_cloudwatch_log_group" "session_logging" {
@@ -319,9 +318,15 @@ resource "aws_launch_template" "default" {
 }
 
 resource "aws_autoscaling_group" "default" {
-  name_prefix = "${module.asg_label.id}-asg"
-  tags        = module.asg_label.tags_as_list_of_maps
-
+  name_prefix = "${module.this.id}-asg"
+  dynamic "tag" {
+    for_each = module.this.tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
   launch_template {
     id      = aws_launch_template.default.id
     version = "$Latest"
