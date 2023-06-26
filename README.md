@@ -23,7 +23,8 @@ Big shout out to the following projects which this project uses/depends on/menti
 
 ```hcl
 module "ssm_agent" {
-  source     = "git::https://github.com/masterpointio/terraform-aws-ssm-agent.git?ref=tags/0.1.0"
+  source     = "masterpointio/ssm-agent/aws"
+  version    = "0.15.1"
   stage      = var.stage
   namespace  = var.namespace
   vpc_id     = module.vpc.vpc_id
@@ -31,23 +32,28 @@ module "ssm_agent" {
 }
 
 module "vpc" {
-  source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.10.0"
-  namespace  = var.namespace
-  stage      = var.stage
-  name       = var.name
-  cidr_block = "10.0.0.0/16"
+  source  = "cloudposse/vpc/aws"
+  version = "2.1.0"
+
+  namespace = var.namespace
+  stage     = var.stage
+  name      = var.name
+
+  ipv4_primary_cidr_block          = "10.0.0.0/16"
+  assign_generated_ipv6_cidr_block = true
 }
 
 module "subnets" {
-  source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.19.0"
-  availability_zones   = var.availability_zones
-  namespace            = var.namespace
-  stage                = var.stage
-  vpc_id               = module.vpc.vpc_id
-  igw_id               = module.vpc.igw_id
-  cidr_block           = module.vpc.vpc_cidr_block
-  nat_gateway_enabled  = var.nat_gateway_enabled
-  nat_instance_enabled = ! var.nat_gateway_enabled
+  source    = "cloudposse/dynamic-subnets/aws"
+  version   = "2.3.0"
+  namespace = var.namespace
+  stage     = var.stage
+
+  availability_zones = var.availability_zones
+  vpc_id             = module.vpc.vpc_id
+  igw_id             = [module.vpc.igw_id]
+  ipv4_cidr_block    = [module.vpc.vpc_cidr_block]
+  ipv6_enabled       = var.ipv6_enabled
 }
 ```
 
