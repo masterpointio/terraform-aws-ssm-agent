@@ -276,11 +276,11 @@ resource "aws_launch_template" "default" {
   user_data     = base64encode(var.user_data)
 
   monitoring {
-    enabled = true
+    enabled = var.detailed_monitoring
   }
 
   network_interfaces {
-    associate_public_ip_address = false
+    associate_public_ip_address = var.associate_public_ip_address
     delete_on_termination       = true
     security_groups             = concat(var.additional_security_group_ids, [aws_security_group.default.id])
   }

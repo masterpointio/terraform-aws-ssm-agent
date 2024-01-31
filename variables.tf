@@ -62,6 +62,19 @@ variable "additional_security_group_ids" {
   default     = []
 }
 
+variable "detailed_monitoring" {
+  description = "Enable detailed monitoring of instance"
+  type = bool
+  default = true
+}
+
+variable "associate_public_ip_address" {
+  description = "Associate public IP address"
+  type = bool
+  # default should fall back to subnet setting
+  default = null
+}
+
 ######################
 ## SESSION LOGGING ##
 ####################
