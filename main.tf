@@ -302,6 +302,12 @@ resource "aws_launch_template" "default" {
   lifecycle {
     create_before_destroy = true
   }
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens = var.enable_imdsv2 ? "required" : "optional"
+    http_protocol_ipv6 = var.metadata_ipv6 ? "enabled" : "disabled"
+  }
 }
 
 resource "aws_autoscaling_group" "default" {

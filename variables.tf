@@ -75,6 +75,18 @@ variable "associate_public_ip_address" {
   default = null
 }
 
+variable "enable_imdsv2" {
+  description = "Enable IMDSv2"
+  type = bool
+  default = true
+}
+
+variable "metadata_ipv6" {
+  description = "Enable IPv6 metadata endpoint"
+  type = bool
+  default = false
+}
+
 ######################
 ## SESSION LOGGING ##
 ####################
