@@ -62,29 +62,38 @@ variable "additional_security_group_ids" {
   default     = []
 }
 
-variable "detailed_monitoring" {
+variable "monitoring_enabled" {
   description = "Enable detailed monitoring of instance"
-  type = bool
-  default = true
+  type        = bool
+  default     = true
 }
 
 variable "associate_public_ip_address" {
   description = "Associate public IP address"
-  type = bool
+  type        = bool
   # default should fall back to subnet setting
   default = null
 }
 
-variable "enable_imdsv2" {
-  description = "Enable IMDSv2"
-  type = bool
-  default = true
+variable "metadata_http_endpoint_enabled" {
+  description = "Whether or not to enable the metadata http endpoint"
+  type        = bool
+  default     = true
 }
 
-variable "metadata_ipv6" {
+variable "metadata_imdsv2_enabled" {
+  description = <<-EOT
+    Whether or not the metadata service requires session tokens,
+    also referred to as Instance Metadata Service Version 2 (IMDSv2).
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "metadata_http_protocol_ipv6_enabled" {
   description = "Enable IPv6 metadata endpoint"
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 ######################

@@ -276,7 +276,7 @@ resource "aws_launch_template" "default" {
   user_data     = base64encode(var.user_data)
 
   monitoring {
-    enabled = var.detailed_monitoring
+    enabled = var.monitoring_enabled
   }
 
   network_interfaces {
@@ -304,9 +304,9 @@ resource "aws_launch_template" "default" {
   }
 
   metadata_options {
-    http_endpoint = "enabled"
-    http_tokens = var.enable_imdsv2 ? "required" : "optional"
-    http_protocol_ipv6 = var.metadata_ipv6 ? "enabled" : "disabled"
+    http_endpoint      = var.metadata_http_endpoint_enabled ? "enabled" : "disabled"
+    http_tokens        = var.metadata_imdsv2_enabled ? "required" : "optional"
+    http_protocol_ipv6 = var.metadata_http_protocol_ipv6_enabled ? "enabled" : "disabled"
   }
 }
 
