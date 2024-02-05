@@ -276,11 +276,11 @@ resource "aws_launch_template" "default" {
   user_data     = base64encode(var.user_data)
 
   monitoring {
-    enabled = true
+    enabled = var.monitoring_enabled
   }
 
   network_interfaces {
-    associate_public_ip_address = false
+    associate_public_ip_address = var.associate_public_ip_address
     delete_on_termination       = true
     security_groups             = concat(var.additional_security_group_ids, [aws_security_group.default.id])
   }
@@ -301,6 +301,12 @@ resource "aws_launch_template" "default" {
 
   lifecycle {
     create_before_destroy = true
+  }
+
+  metadata_options {
+    http_endpoint      = var.metadata_http_endpoint_enabled ? "enabled" : "disabled"
+    http_tokens        = var.metadata_imdsv2_enabled ? "required" : "optional"
+    http_protocol_ipv6 = var.metadata_http_protocol_ipv6_enabled ? "enabled" : "disabled"
   }
 }
 
