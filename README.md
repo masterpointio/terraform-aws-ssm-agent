@@ -82,7 +82,7 @@ Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.35.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.0 |
 
 ## Modules
 
