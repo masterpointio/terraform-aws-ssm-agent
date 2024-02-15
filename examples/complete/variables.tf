@@ -33,3 +33,9 @@ variable "nat_gateway_enabled" {
   type        = bool
   description = "Whether to enable NAT Gateways. If false, then the application uses NAT Instances, which are much cheaper."
 }
+
+variable "ipv6_enabled" {
+  default     = true
+  type        = bool
+  description = "Whether to enable IPv6 addresses for subnets."
+}
