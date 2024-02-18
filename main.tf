@@ -275,6 +275,8 @@ resource "aws_launch_template" "default" {
   key_name      = var.key_pair_name
   user_data     = base64encode(var.user_data)
 
+  update_default_version = true
+
   monitoring {
     enabled = var.monitoring_enabled
   }
@@ -312,22 +314,13 @@ resource "aws_launch_template" "default" {
 
 resource "aws_autoscaling_group" "default" {
   name_prefix = "${module.this.id}-asg"
-  dynamic "tag" {
-    for_each = module.this.tags
-    content {
-      key                 = tag.key
-      value               = tag.value
-      propagate_at_launch = true
-    }
-  }
-  launch_template {
-    id      = aws_launch_template.default.id
-    version = "$Latest"
-  }
 
-  max_size         = var.instance_count
-  min_size         = var.instance_count
-  desired_capacity = var.instance_count
+  max_size         = var.max_size
+  min_size         = var.min_size
+  desired_capacity = var.desired_capacity
+
+  # We don't care to protect from scale in by default, as we want to roll instances frequently
+  protect_from_scale_in = false
 
   vpc_zone_identifier = var.subnet_ids
 
@@ -338,6 +331,28 @@ resource "aws_autoscaling_group" "default" {
   termination_policies = [
     "OldestLaunchConfiguration",
   ]
+
+  launch_template {
+    id      = aws_launch_template.default.id
+    version = aws_launch_template.default.latest_version
+  }
+
+  instance_refresh {
+    strategy = "Rolling"
+    triggers = ["tag"]
+    preferences {
+      min_healthy_percentage = 50
+    }
+  }
+
+  dynamic "tag" {
+    for_each = module.this.tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
 
   lifecycle {
     create_before_destroy = true
