@@ -319,8 +319,8 @@ resource "aws_autoscaling_group" "default" {
   min_size         = var.min_size
   desired_capacity = var.desired_capacity
 
-  # We don't care to protect from scale in by default, as we want to roll instances frequently
-  protect_from_scale_in = false
+  # By default, we don't care to protect from scale in as we want to roll instances frequently
+  protect_from_scale_in = var.protect_from_scale_in
 
   vpc_zone_identifier = var.subnet_ids
 
@@ -341,7 +341,8 @@ resource "aws_autoscaling_group" "default" {
     strategy = "Rolling"
     triggers = ["tag"]
     preferences {
-      min_healthy_percentage = 50
+      scale_in_protected_instances = var.scale_in_protected_instances
+      min_healthy_percentage       = 50
     }
   }
 

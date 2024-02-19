@@ -19,9 +19,9 @@ variable "permissions_boundary" {
 ####################
 
 variable "instance_type" {
-  default     = "t3.nano"
+  default     = "t4g.nano"
   type        = string
-  description = "The instance type to use for the SSM Agent EC2 Instnace."
+  description = "The instance type to use for the SSM Agent EC2 instance."
 }
 
 variable "ami" {
@@ -165,4 +165,21 @@ variable "desired_capacity" {
   description = "Desired number of instances in the Auto Scaling Group"
   type        = number
   default     = 1
+}
+
+variable "protect_from_scale_in" {
+  description = "Allows setting instance protection for scale in actions on the ASG."
+  type        = bool
+  default     = false
+}
+
+variable "scale_in_protected_instances" {
+  description = "Behavior when encountering instances protected from scale in are found. Available behaviors are Refresh, Ignore, and Wait. Default is Ignore."
+  type        = string
+  default     = "Ignore"
+
+  validation {
+    condition     = contains(["Refresh", "Ignore", "Wait"], var.scale_in_protected_instances)
+    error_message = "scale_in_protected_instances must be one of Refresh, Ignore, or Wait"
+  }
 }
