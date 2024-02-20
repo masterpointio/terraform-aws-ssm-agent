@@ -19,21 +19,15 @@ variable "permissions_boundary" {
 ####################
 
 variable "instance_type" {
-  default     = "t3.nano"
+  default     = "t4g.nano"
   type        = string
-  description = "The instance type to use for the SSM Agent EC2 Instnace."
+  description = "The instance type to use for the SSM Agent EC2 instance."
 }
 
 variable "ami" {
   default     = ""
   type        = string
   description = "The AMI to use for the SSM Agent EC2 Instance. If not provided, the latest Amazon Linux 2 AMI will be used. Note: This will update periodically as AWS releases updates to their AL2 AMI. Pin to a specific AMI if you would like to avoid these updates."
-}
-
-variable "instance_count" {
-  default     = 1
-  type        = number
-  description = "The number of SSM Agent instances you would like to deploy."
 }
 
 variable "user_data" {
@@ -150,7 +144,42 @@ variable "create_run_shell_document" {
 }
 
 variable "session_logging_ssm_document_name" {
-  default     = "SSM-SessionManagerRunShell"
-  type        = string
+  default = "SSM-SessionManagerRunShell"
+  type    = string
+
   description = "Name for `session_logging` SSM document. This is only applied if 2 conditions are met: (1) `session_logging_enabled` = true, (2) `create_run_shell_document` = true."
+}
+variable "max_size" {
+  description = "Maximum number of instances in the Auto Scaling Group"
+  type        = number
+  default     = 2
+}
+
+variable "min_size" {
+  description = "Minimum number of instances in the Auto Scaling Group"
+  type        = number
+  default     = 1
+}
+
+variable "desired_capacity" {
+  description = "Desired number of instances in the Auto Scaling Group"
+  type        = number
+  default     = 1
+}
+
+variable "protect_from_scale_in" {
+  description = "Allows setting instance protection for scale in actions on the ASG."
+  type        = bool
+  default     = false
+}
+
+variable "scale_in_protected_instances" {
+  description = "Behavior when encountering instances protected from scale in are found. Available behaviors are Refresh, Ignore, and Wait. Default is Ignore."
+  type        = string
+  default     = "Ignore"
+
+  validation {
+    condition     = contains(["Refresh", "Ignore", "Wait"], var.scale_in_protected_instances)
+    error_message = "scale_in_protected_instances must be one of Refresh, Ignore, or Wait"
+  }
 }
