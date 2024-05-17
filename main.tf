@@ -271,7 +271,7 @@ DOC
 
 resource "aws_launch_template" "default" {
   name_prefix   = module.this.id
-  image_id      = length(var.ami) > 0 ? var.ami : data.aws_ami.amazon_linux_3.id
+  image_id      = length(var.ami) > 0 ? var.ami : data.aws_ami.amazon_linux_2023.id
   instance_type = var.instance_type
   key_name      = var.key_pair_name
   user_data     = base64encode(var.user_data)
