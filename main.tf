@@ -1,11 +1,12 @@
 locals {
+  instance_type_chars = split("", var.instance_type)
   # Validate that only 'arm64' architecture is used with 'g' processor instances to ensure compatibility.
   # https://docs.aws.amazon.com/ec2/latest/instancetypes/instance-type-names.html
   is_instance_compatible = (
-    # True if does not contain 'g' when architecture is x86_64
-    (var.architecture == "x86_64" && !can(regex("g", var.instance_type))) ||
-    # True if contains 'g' when architecture is arm64
-    (var.architecture == "arm64" && can(regex("g", var.instance_type)))
+    # True if does not contain 'g' in the third position when architecture is x86_64
+    (var.architecture == "x86_64" && element(local.instance_type_chars, 2) != "g") ||
+    # True if contains 'g' in the third position when architecture is arm64
+    (var.architecture == "arm64" && element(local.instance_type_chars, 2) == "g")
   )
 }
 
