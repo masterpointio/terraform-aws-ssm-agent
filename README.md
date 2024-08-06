@@ -1,6 +1,6 @@
 [![Masterpoint Logo](https://i.imgur.com/RDLnuQO.png)](https://masterpoint.io)
 
-[![Release](https://img.shields.io/github/release/masterpointio/ecsrun.svg)](https://github.com/masterpointio/ecsrun/releases/latest)
+[![Release](https://img.shields.io/github/v/release/masterpointio/terraform-aws-ssm-agent.svg)](https://github.com/masterpointio/terraform-aws-ssm-agent/releases/latest)
 
 # terraform-aws-ssm-agent
 
