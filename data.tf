@@ -13,7 +13,7 @@ data "aws_ami" "amazon_linux_2023" {
 
   filter {
     name   = "architecture"
-    values = ["x86_64"]
+    values = [var.architecture]
   }
 
   filter {

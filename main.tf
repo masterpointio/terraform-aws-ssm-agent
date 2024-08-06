@@ -1,3 +1,26 @@
+locals {
+  instance_type_chars = split("", var.instance_type)
+  # Validate that only 'arm64' architecture is used with 'g' processor instances to ensure compatibility.
+  # https://docs.aws.amazon.com/ec2/latest/instancetypes/instance-type-names.html
+  is_instance_compatible = (
+    # True if does not contain 'g' in the third position when architecture is x86_64
+    (var.architecture == "x86_64" && element(local.instance_type_chars, 2) != "g") ||
+    # True if contains 'g' in the third position when architecture is arm64
+    (var.architecture == "arm64" && element(local.instance_type_chars, 2) == "g")
+  )
+}
+
+resource "null_resource" "validate_instance_type" {
+  count = local.is_instance_compatible ? 0 : 1
+
+  lifecycle {
+    precondition {
+      condition     = local.is_instance_compatible
+      error_message = "The instance_type must be compatible with the specified architecture. For x86_64, you cannot use instance types with ARM processors (e.g., t3, m5, c5). For arm64, use instance types with 'g' indicating ARM processor (e.g., t4g, c6g, m6g)."
+    }
+  }
+}
+
 module "role_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
