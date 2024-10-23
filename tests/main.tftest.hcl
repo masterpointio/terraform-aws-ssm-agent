@@ -43,6 +43,7 @@ run "create_ssm_agent" {
     error_message = "The ID of the SSM Agent Role is empty, possibly not created."
   }
 
+
 }
 
 run "validate_ssm_agent_data" {
@@ -72,7 +73,6 @@ run "validate_ssm_agent_data" {
     condition     = tolist(data.aws_instance.from_test.root_block_device)[0].encrypted == true
     error_message = "The root block device of the SSM Agent EC2 instance is not encrypted."
   }
-
 
   assert {
     condition     = data.aws_ssm_document.from_test.content != ""
