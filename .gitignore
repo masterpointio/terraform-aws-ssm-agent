@@ -34,3 +34,6 @@ override.tf.json
 
 # Ignore lock files
 .terraform.lock.hcl
+
+# Random
+*.DS_Store

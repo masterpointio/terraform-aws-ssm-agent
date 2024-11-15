@@ -1,0 +1,25 @@
+name: Monthly Trunk Upgrade
+on:
+  schedule:
+    # On the first day of every month @ 8am
+    - cron: 0 8 1 * *
+    # Allows us to manually run the workflow from Actions UI
+  workflow_dispatch: {}
+permissions: read-all
+jobs:
+  trunk_upgrade:
+    name: Upgrade Trunk
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # For trunk to create PRs
+      pull-requests: write # For trunk to create PRs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trunk Upgrade
+        uses: trunk-io/trunk-action/upgrade@2eaee169140ec559bd556208f9f99cdfdf468da8 # v1.1.18
+        with:
+          base: main
+          reviewers: "@masterpointio/masterpoint-internal"
+          prefix: "chore: "
