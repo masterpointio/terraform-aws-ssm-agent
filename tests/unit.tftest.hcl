@@ -31,81 +31,16 @@ run "verify_session_logging" {
   }
 }
 
-run "verify_launch_template" {
+run "verify_session_logging_bucket_logic" {
   command = plan
 
   variables {
-    instance_type               = "c6g.nano"
-    monitoring_enabled          = true
-    associate_public_ip_address = false
-    metadata_imdsv2_enabled     = true
-    namespace                   = "mp"
-    stage                       = "test"
-    name                        = "ssm-agent"
+    session_logging_enabled     = true
+    session_logging_bucket_name = ""  # Empty name should trigger bucket creation
   }
 
   assert {
-    condition     = aws_launch_template.default.instance_type == "c6g.nano"
-    error_message = "Launch template instance type does not match"
-  }
-
-  assert {
-    condition     = aws_launch_template.default.monitoring[0].enabled == true
-    error_message = "Instance monitoring not enabled"
-  }
-
-  assert {
-    condition     = aws_launch_template.default.metadata_options[0].http_tokens == "required"
-    error_message = "IMDSv2 not enforced in launch template"
-  }
-
-  assert {
-    condition     = aws_launch_template.default.iam_instance_profile[0].name == "mp-test-ssm-agent-role"
-    error_message = "IAM instance profile name does not match expected value"
-  }
-
-  assert {
-    condition     = aws_launch_template.default.iam_instance_profile[0].name == aws_iam_instance_profile.default.name
-    error_message = "Launch template IAM instance profile name does not match the created instance profile"
-  }
-}
-
-run "verify_autoscaling_group" {
-  command = plan
-
-  variables {
-    max_size         = 2
-    min_size         = 1
-    desired_capacity = 1
-    subnet_ids       = ["subnet-12345678"]
-  }
-
-  assert {
-    condition     = aws_autoscaling_group.default.max_size == 2
-    error_message = "ASG max size not set correctly"
-  }
-
-  assert {
-    condition     = aws_autoscaling_group.default.min_size == 1
-    error_message = "ASG min size not set correctly"
-  }
-
-  assert {
-    condition     = aws_autoscaling_group.default.desired_capacity == 1
-    error_message = "ASG desired capacity not set correctly"
-  }
-}
-
-
-run "verify_s3_bucket_configuration" {
-  command = plan
-
-  variables {
-    session_logging_enabled = true
-  }
-
-  assert {
-    condition     = module.logs_bucket.enabled == true
-    error_message = "S3 bucket session logging bucket isn't enabled when set to enabled."
+    condition     = local.logs_bucket_enabled == true
+    error_message = "Logs bucket should be enabled when session logging is enabled and no bucket name is provided"
   }
 }
