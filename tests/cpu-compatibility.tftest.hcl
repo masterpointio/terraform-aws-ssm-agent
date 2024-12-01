@@ -1,13 +1,13 @@
 variables {
-  vpc_id = "vpc-12345678"
-  subnet_ids = ["subnet-12345678", "subnet-87654321"]
-  stage = "test"
-  namespace = "mp"
-  name = "ssm-agent"
-  region = "us-east-1"
-  availability_zones = ["us-east-1a"]
+  vpc_id              = "vpc-12345678"
+  subnet_ids          = ["subnet-12345678", "subnet-87654321"]
+  stage               = "test"
+  namespace           = "mp"
+  name                = "ssm-agent"
+  region              = "us-east-1"
+  availability_zones  = ["us-east-1a"]
   nat_gateway_enabled = true
-  ipv6_enabled = true
+  ipv6_enabled        = true
 }
 
 ### TESTING INSTANCE and ARCHITECTURE COMPATIBILITY ###
@@ -20,7 +20,7 @@ run "valid_x86_64_instance" {
 
   variables {
     instance_type = "t3.micro"
-    architecture = "x86_64"
+    architecture  = "x86_64"
   }
 
   assert {
@@ -35,7 +35,7 @@ run "valid_arm64_instance" {
 
   variables {
     instance_type = "t4g.micro"
-    architecture = "arm64"
+    architecture  = "arm64"
   }
 
   assert {
@@ -50,7 +50,7 @@ run "invalid_x86_64_instance" {
 
   variables {
     instance_type = "t4g.micro"
-    architecture = "x86_64"
+    architecture  = "x86_64"
   }
 
   expect_failures = [
@@ -64,7 +64,7 @@ run "invalid_arm64_instance" {
 
   variables {
     instance_type = "t3.micro"
-    architecture = "arm64"
+    architecture  = "arm64"
   }
 
   expect_failures = [
@@ -79,7 +79,7 @@ run "graphics_instance_arm_incompatiblity_edge_case" {
 
   variables {
     instance_type = "g3s.xlarge"
-    architecture = "arm64"
+    architecture  = "arm64"
   }
 
   expect_failures = [
@@ -94,7 +94,7 @@ run "graphics_instance_x86_compatibility_edge_case" {
 
   variables {
     instance_type = "g4dn.xlarge"
-    architecture = "x86_64"
+    architecture  = "x86_64"
   }
 
   assert {
