@@ -36,7 +36,7 @@ run "verify_session_logging_bucket_logic" {
 
   variables {
     session_logging_enabled     = true
-    session_logging_bucket_name = ""  # Empty name should trigger bucket creation
+    session_logging_bucket_name = "" # Empty name should trigger bucket creation
   }
 
   assert {
