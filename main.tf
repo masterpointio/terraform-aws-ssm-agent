@@ -332,7 +332,8 @@ resource "aws_launch_template" "default" {
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      encrypted = true
+      encrypted   = true
+      volume_size = var.volume_size
     }
   }
 

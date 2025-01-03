@@ -96,6 +96,12 @@ variable "metadata_http_protocol_ipv6_enabled" {
   default     = false
 }
 
+variable "volume_size" {
+  description = "The size of the volume in gigabytes."
+  type        = number
+  default     = null
+}
+
 ######################
 ## SESSION LOGGING ##
 ####################
