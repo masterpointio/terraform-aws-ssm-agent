@@ -13,6 +13,9 @@ permissions:
   id-token: write
   pull-requests: read
 
+env:
+  AWS_REGION: us-east-1
+
 jobs:
   tf-test:
     name: 🧪 ${{ matrix.tf }} test
@@ -40,6 +43,27 @@ jobs:
       - name: Aqua Install
         shell: bash
         run: aqua install --tags ${{ matrix.tf }}
+
+      - name: Check if TF AWS provider is used
+        id: check_aws_provider
+        run: |
+          if grep -q "aws" $(find . -name "versions.tf" -o -name "versions.tofu" -type f); then
+            echo "Found aws in versions.tf or versions.tofu files"
+            echo "contains_hashicorp=true" >> $GITHUB_OUTPUT
+          else
+            echo "No versions.tf or versions.tofu files contain aws"
+            echo "contains_hashicorp=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Assume into the `masterpoint-testing` AWS account with OIDC for testing ONLY if the AWS provider is used
+      # Not needed for modules that don't use the AWS provider, for example, exclusive Spacelift modules
+      - name: Configure AWS Credentials on `masterpoint-testing` AWS Account
+        if: steps.check_aws_provider.outputs.contains_hashicorp == 'true'
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::115843287071:role/mp-ue1-testing-oidc-github
+          role-session-name: GitHubActionsOIDC-MP-Infra-Repo
+          aws-region: ${{ env.AWS_REGION }}
 
       - run: ${{ matrix.tf }} init
       - run: ${{ matrix.tf }} test
