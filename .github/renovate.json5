@@ -1,0 +1,56 @@
+{
+  "extends": [
+    "config:best-practices",
+    "github>aquaproj/aqua-renovate-config#2.7.5"
+  ],
+  "schedule": [
+    "after 9am on the first day of the month"
+  ],
+  "assigneesFromCodeOwners": true,
+  "dependencyDashboardAutoclose": true,
+  "addLabels": [
+    "auto-upgrade"
+  ],
+  "enabledManagers": [
+    "terraform"
+  ],
+  "terraform": {
+    "ignorePaths": [
+      "**/context.tf" // Mixin file https://github.com/cloudposse/terraform-null-label/blob/main/exports/context.tf
+    ],
+    "fileMatch": [
+      "\\.tf$",
+      "\\.tofu$"
+    ]
+  },
+  "packageRules": [
+    {
+      "matchDepTypes": [
+        "optionalDependencies"
+      ],
+      // Allow auto merge if it's not a major version update
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": true
+    },
+    {
+      "matchFileNames": ["**/*.tofu", "**/*.tf"],
+      "matchDatasources": ["terraform-provider", "terraform-module"],
+      "registryUrls": ["https://registry.opentofu.org"]
+    },
+    {
+      "matchFileNames": ["**/*.tofu"],
+      "matchDepTypes": ["required_version"],
+      "registryUrls": ["https://registry.opentofu.org"]
+    },
+    {
+      "matchFileNames": ["**/*.tf"],
+      "matchDepTypes": ["required_version"],
+      "registryUrls": ["https://registry.terraform.io"]
+    }
+  ]
+}

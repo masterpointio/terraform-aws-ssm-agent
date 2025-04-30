@@ -1,0 +1,69 @@
+name: TF Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  actions: read
+  checks: write
+  contents: read
+  id-token: write
+  pull-requests: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  tf-test:
+    name: 🧪 ${{ matrix.tf }} test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tf: [tofu, terraform]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Aqua Cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        if: ${{ !github.event.act }} # Don't enable the cache step if we're using act for testing
+        with:
+          path: ~/.local/share/aquaproj-aqua
+          key: v1-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
+          restore-keys: |
+            v1-aqua-installer-${{runner.os}}-${{runner.arch}}-
+
+      - name: Install Aqua
+        uses: aquaproj/aqua-installer@5e54e5cee8a95ee2ce7c04cb993da6dfad13e59c # v3.2.1
+        with:
+          aqua_version: v2.48.1
+
+      - name: Aqua Install
+        shell: bash
+        run: aqua install --tags ${{ matrix.tf }}
+
+      - name: Check if TF AWS provider is used
+        id: check_aws_provider
+        run: |
+          if grep -q "aws" $(find . -name "versions.tf" -o -name "versions.tofu" -type f); then
+            echo "Found aws in versions.tf or versions.tofu files"
+            echo "contains_hashicorp=true" >> $GITHUB_OUTPUT
+          else
+            echo "No versions.tf or versions.tofu files contain aws"
+            echo "contains_hashicorp=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Assume into the `masterpoint-testing` AWS account with OIDC for testing ONLY if the AWS provider is used
+      # Not needed for modules that don't use the AWS provider, for example, exclusive Spacelift modules
+      - name: Configure AWS Credentials on `masterpoint-testing` AWS Account
+        if: steps.check_aws_provider.outputs.contains_hashicorp == 'true'
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+        with:
+          role-to-assume: arn:aws:iam::115843287071:role/mp-ue1-testing-oidc-github
+          role-session-name: GitHubActionsOIDC-MP-Infra-Repo
+          aws-region: ${{ env.AWS_REGION }}
+
+      - run: ${{ matrix.tf }} init
+      - run: ${{ matrix.tf }} test
