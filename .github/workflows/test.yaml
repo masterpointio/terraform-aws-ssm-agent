@@ -26,3 +26,4 @@ jobs:
         with:
           tf_type: ${{ matrix.tf }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          aws_role_arn: ${{ vars.TF_TEST_AWS_ROLE_ARN }}
