@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - chore/sync-with-templat
   pull_request:
 
 permissions:
@@ -25,5 +24,5 @@ jobs:
       - uses: masterpointio/github-action-tf-test@c3b619f3bca9e4f482b9e0fb3166ab3f02d9d54c # v1.0.0
         with:
           tf_type: ${{ matrix.tf }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           aws_role_arn: ${{ vars.TF_TEST_AWS_ROLE_ARN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
