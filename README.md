@@ -115,6 +115,7 @@ Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 | [aws_iam_role_policy_attachment.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_launch_template.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template) | resource |
 | [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_security_group_rule.additional](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.allow_all_egress](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_ssm_document.session_logging](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_document) | resource |
 | [null_resource.validate_instance_type](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
@@ -130,6 +131,7 @@ Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_security_group_ids"></a> [additional\_security\_group\_ids](#input\_additional\_security\_group\_ids) | Security groups that will be attached to the app instances | `list(string)` | `[]` | no |
+| <a name="input_additional_security_group_rules"></a> [additional\_security\_group\_rules](#input\_additional\_security\_group\_rules) | Additional security group rules that will be attached to the primary security group | <pre>map(object({<br/>    type      = string<br/>    from_port = number<br/>    to_port   = number<br/>    protocol  = string<br/><br/>    description      = optional(string)<br/>    cidr_blocks      = optional(list(string))<br/>    ipv6_cidr_blocks = optional(list(string))<br/>    prefix_list_ids  = optional(list(string))<br/>    self             = optional(bool)<br/>  }))</pre> | `{}` | no |
 | <a name="input_additional_tag_map"></a> [additional\_tag\_map](#input\_additional\_tag\_map) | Additional key-value pairs to add to each map in `tags_as_list_of_maps`. Not added to `tags` or `id`.<br/>This is for some rare cases where resources want additional configuration of tags<br/>and therefore take a list of maps with tag key, value, and additional configuration. | `map(string)` | `{}` | no |
 | <a name="input_ami"></a> [ami](#input\_ami) | The AMI to use for the SSM Agent EC2 Instance. If not provided, the latest Amazon Linux 2023 AMI will be used. Note: This will update periodically as AWS releases updates to their AL2023 AMI. Pin to a specific AMI if you would like to avoid these updates. | `string` | `""` | no |
 | <a name="input_architecture"></a> [architecture](#input\_architecture) | The architecture of the AMI (e.g., x86\_64, arm64) | `string` | `"arm64"` | no |
