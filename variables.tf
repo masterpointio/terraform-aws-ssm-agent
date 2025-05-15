@@ -62,6 +62,12 @@ variable "additional_security_group_ids" {
   default     = []
 }
 
+variable "additional_security_group_rules" {
+  description = "Additional security group rules that will be attached to the primary security group"
+  type        = map(string)
+  default     = {}
+}
+
 variable "monitoring_enabled" {
   description = "Enable detailed monitoring of instance"
   type        = bool
