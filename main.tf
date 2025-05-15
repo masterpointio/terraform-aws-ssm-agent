@@ -1,4 +1,4 @@
-locals {
+locals { #
   instance_type_chars = split("", var.instance_type)
   # Validate that only 'arm64' architecture is used with 'g' processor instances to ensure compatibility.
   # https://docs.aws.amazon.com/ec2/latest/instancetypes/instance-type-names.html
