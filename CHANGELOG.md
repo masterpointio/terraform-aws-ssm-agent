@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.3.0...v1.4.0) (2025-05-15)
+
+
+### Features
+
+* allow configuring of additional security group rules ([#38](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/38)) ([5f9e32d](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/5f9e32deeaf207b4ebf7a8a7a924cf132d3fb44a))
+
+
+### Bug Fixes
+
+* **gha:** tf test pr target ([#40](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/40)) ([5a2e766](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/5a2e766f9c92f096aa81ca35e22e5b22e80a7230))
+
 ## [1.3.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/1.2.1...v1.3.0) (2025-01-04)
 
 
