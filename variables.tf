@@ -62,6 +62,23 @@ variable "additional_security_group_ids" {
   default     = []
 }
 
+variable "additional_security_group_rules" {
+  description = "Additional security group rules that will be attached to the primary security group"
+  type = map(object({
+    type      = string
+    from_port = number
+    to_port   = number
+    protocol  = string
+
+    description      = optional(string)
+    cidr_blocks      = optional(list(string))
+    ipv6_cidr_blocks = optional(list(string))
+    prefix_list_ids  = optional(list(string))
+    self             = optional(bool)
+  }))
+  default = {}
+}
+
 variable "monitoring_enabled" {
   description = "Enable detailed monitoring of instance"
   type        = bool

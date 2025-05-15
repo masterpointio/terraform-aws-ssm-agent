@@ -159,6 +159,23 @@ resource "aws_security_group_rule" "allow_all_egress" {
   security_group_id = aws_security_group.default.id
 }
 
+resource "aws_security_group_rule" "additional" {
+  for_each = var.additional_security_group_rules
+
+  type      = lookup(each.value, "type")
+  from_port = lookup(each.value, "from_port")
+  to_port   = lookup(each.value, "to_port")
+  protocol  = lookup(each.value, "protocol")
+
+  description      = lookup(each.value, "description", null)
+  cidr_blocks      = lookup(each.value, "cidr_blocks", null)
+  ipv6_cidr_blocks = lookup(each.value, "ipv6_cidr_blocks", null)
+  prefix_list_ids  = lookup(each.value, "prefix_list_ids", null)
+  self             = lookup(each.value, "self", null)
+
+  security_group_id = aws_security_group.default.id
+}
+
 #######################
 ## SECURITY LOGGING ##
 #####################
