@@ -1,6 +1,6 @@
 [![Banner][banner-image]](https://masterpoint.io/)
 
-# terraform-aws-ssm-agent
+# terraform-aws-ssm-agent -
 
 [![Release][release-badge]][latest-release]
 
