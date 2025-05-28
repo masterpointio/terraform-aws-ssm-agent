@@ -8,6 +8,12 @@ locals {
     # True if contains 'g' in the third position when architecture is arm64
     (var.architecture == "arm64" && element(local.instance_type_chars, 2) == "g")
   )
+
+  # Get the root device name from the provided/default AMI.
+  root_volume_device_name = (
+    length(var.ami) > 0 ? element(data.aws_ami.instance, 0).root_device_name : "/dev/xvda"
+  )
+
 }
 
 resource "null_resource" "validate_instance_type" {
@@ -347,7 +353,7 @@ resource "aws_launch_template" "default" {
   }
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = local.root_volume_device_name
     ebs {
       encrypted   = true
       volume_size = var.volume_size
