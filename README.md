@@ -77,6 +77,7 @@ Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
 ## Requirements
 
 | Name | Version |
