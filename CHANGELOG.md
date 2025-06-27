@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.4.0...v1.4.1) (2025-06-27)
+
+
+### Bug Fixes
+
+* auto-detect the root device name from the AMI ([#43](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/43)) ([f8a5316](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/f8a531670ce97f7a98f64a03de4663ace189a7c9))
+
 ## [1.4.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.3.0...v1.4.0) (2025-05-15)
 
 
