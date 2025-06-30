@@ -44,7 +44,7 @@ module "logs_label" {
 }
 
 locals {
-  region     = coalesce(var.region, data.aws_region.current.name)
+  region     = coalesce(var.region, data.aws_region.current.region)
   account_id = data.aws_caller_identity.current.account_id
 
   session_logging_bucket_name = try(coalesce(var.session_logging_bucket_name, module.logs_label.id), "")
