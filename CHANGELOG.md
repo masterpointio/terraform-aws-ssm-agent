@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.4.0...v1.5.0) (2025-08-01)
+
+
+### Features
+
+* fix deprecation warning ([#47](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/47)) ([dbd82ca](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/dbd82ca66426b6d8ec44c39b442a32a464ed5844))
+
+
+### Bug Fixes
+
+* auto-detect the root device name from the AMI ([#43](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/43)) ([f8a5316](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/f8a531670ce97f7a98f64a03de4663ace189a7c9))
+
 ## [1.4.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.3.0...v1.4.0) (2025-05-15)
 
 
