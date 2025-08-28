@@ -32,3 +32,8 @@ output "session_logging_bucket_arn" {
   value       = local.logs_bucket_enabled ? join("", data.aws_s3_bucket.logs_bucket.*.arn) : ""
   description = "The ARN of the SSM Agent Session Logging S3 Bucket."
 }
+
+output "session_logging_kms_key_arn" {
+  value       = var.session_logging_enabled && var.session_logging_encryption_enabled && length(var.session_logging_kms_key_arn) == 0 ? module.kms_key.key_arn : ""
+  description = "The ARN of the SSM Agent Session Logging KMS Key provisioned from this module."
+}

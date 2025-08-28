@@ -194,6 +194,7 @@ Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | The ID of the SSM Agent Security Group. |
 | <a name="output_session_logging_bucket_arn"></a> [session\_logging\_bucket\_arn](#output\_session\_logging\_bucket\_arn) | The ARN of the SSM Agent Session Logging S3 Bucket. |
 | <a name="output_session_logging_bucket_id"></a> [session\_logging\_bucket\_id](#output\_session\_logging\_bucket\_id) | The ID of the SSM Agent Session Logging S3 Bucket. |
+| <a name="output_session_logging_kms_key_arn"></a> [session\_logging\_kms\_key\_arn](#output\_session\_logging\_kms\_key\_arn) | The ARN of the SSM Agent Session Logging KMS Key provisioned from this module. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
