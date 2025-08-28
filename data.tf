@@ -1,6 +1,26 @@
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
+# VPC lookup by name (when vpc_name is provided)
+data "aws_vpc" "selected" {
+  count = length(var.vpc_name) > 0 ? 1 : 0
+
+  filter {
+    name   = "tag:Name"
+    values = [var.vpc_name]
+  }
+}
+
+# Individual subnet lookup by name (when subnet_names are provided)
+data "aws_subnet" "selected" {
+  for_each = toset(var.subnet_names)
+
+  filter {
+    name   = "tag:Name"
+    values = [each.value]
+  }
+}
+
 # Most recent Amazon Linux 2023 AMI
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
@@ -33,7 +53,7 @@ data "aws_ami" "amazon_linux_2023" {
 # This rule was introduced in the following PR:
 # https://github.com/masterpointio/terraform-aws-ssm-agent/pull/43.
 #
-# trunk-ignore(trivy/AVD-AWS-0344)
+# trivy:ignore:AVD-AWS-0344
 data "aws_ami" "instance" {
   count = length(var.ami) > 0 ? 1 : 0
 
@@ -42,5 +62,69 @@ data "aws_ami" "instance" {
   filter {
     name   = "image-id"
     values = [var.ami]
+  }
+}
+
+# IAM policy document for EC2 instances to assume the SSM Agent role
+data "aws_iam_policy_document" "default" {
+
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+# S3 bucket for session logging (when using existing bucket)
+data "aws_s3_bucket" "logs_bucket" {
+  count  = var.session_logging_enabled ? 1 : 0
+  bucket = try(coalesce(var.session_logging_bucket_name, module.logs_bucket.bucket_id), "")
+}
+
+# https://docs.aws.amazon.com/systems-manager/latest/userguide/getting-started-create-iam-instance-profile.html#create-iam-instance-profile-ssn-logging
+data "aws_iam_policy_document" "session_logging" {
+  count = var.session_logging_enabled ? 1 : 0
+
+  statement {
+    sid    = "SSMAgentSessionAllowS3Logging"
+    effect = "Allow"
+    actions = [
+      "s3:PutObject"
+    ]
+    resources = ["${join("", data.aws_s3_bucket.logs_bucket.*.arn)}/*"]
+  }
+
+  statement {
+    sid    = "SSMAgentSessionAllowCloudWatchLogging"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "SSMAgentSessionAllowGetEncryptionConfig"
+    effect = "Allow"
+    actions = [
+      "s3:GetEncryptionConfiguration"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "SSMAgentSessionAllowKMSDataKey"
+    effect = "Allow"
+    actions = [
+      "kms:GenerateDataKey"
+    ]
+    resources = ["*"]
   }
 }

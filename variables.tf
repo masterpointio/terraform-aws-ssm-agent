@@ -1,11 +1,25 @@
 variable "vpc_id" {
   type        = string
   description = "The ID of the VPC which the EC2 Instance will run in."
+  default     = ""
 }
 
 variable "subnet_ids" {
   type        = list(string)
   description = "The Subnet IDs which the SSM Agent will run in. These *should* be private subnets."
+  default     = []
+}
+
+variable "vpc_name" {
+  type        = string
+  description = "The name of the VPC which the EC2 Instance will run in. If provided, vpc_id will be ignored."
+  default     = ""
+}
+
+variable "subnet_names" {
+  type        = list(string)
+  description = "The Subnet names which the SSM Agent will run in. If provided, subnet_ids will be ignored. These *should* be private subnets."
+  default     = []
 }
 
 variable "permissions_boundary" {

@@ -14,6 +14,10 @@ locals {
     length(var.ami) > 0 ? element(data.aws_ami.instance, 0).root_device_name : "/dev/xvda"
   )
 
+  # VPC and Subnet ID resolution - names take precedence over IDs
+  vpc_id     = length(var.vpc_name) > 0 ? one(data.aws_vpc.selected[*].id) : var.vpc_id
+  subnet_ids = length(var.subnet_names) > 0 ? values(data.aws_subnet.selected)[*].id : var.subnet_ids
+
 }
 
 resource "null_resource" "validate_instance_type" {
@@ -24,6 +28,34 @@ resource "null_resource" "validate_instance_type" {
       condition     = local.is_instance_compatible
       error_message = "The instance_type must be compatible with the specified architecture. For x86_64, you cannot use instance types with ARM processors (e.g., t3, m5, c5). For arm64, use instance types with 'g' indicating ARM processor (e.g., t4g, c6g, m6g)."
     }
+  }
+}
+
+# Validation using terraform_data to halt execution if requirements aren't met
+resource "terraform_data" "vpc_subnet_validation" {
+  lifecycle {
+    precondition {
+      condition     = length(var.vpc_name) > 0 || length(var.vpc_id) > 0
+      error_message = "Either vpc_name or vpc_id must be provided."
+    }
+
+    precondition {
+      condition     = length(var.subnet_names) > 0 || length(var.subnet_ids) > 0
+      error_message = "Either subnet_names or subnet_ids must be provided."
+    }
+  }
+}
+
+# Warning checks for VPC and subnet configuration (non-blocking)
+check "vpc_subnet_warnings" {
+  assert {
+    condition     = !(length(var.vpc_name) > 0 && length(var.vpc_id) > 0)
+    error_message = "Both vpc_name and vpc_id are provided. When vpc_name is specified, vpc_id will be ignored."
+  }
+
+  assert {
+    condition     = !(length(var.subnet_names) > 0 && length(var.subnet_ids) > 0)
+    error_message = "Both subnet_names and subnet_ids are provided. When subnet_names are specified, subnet_ids will be ignored."
   }
 }
 
@@ -56,68 +88,6 @@ locals {
 #####################
 ## SSM AGENT ROLE ##
 ###################
-
-data "aws_iam_policy_document" "default" {
-
-  statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-  }
-}
-
-data "aws_s3_bucket" "logs_bucket" {
-  count  = var.session_logging_enabled ? 1 : 0
-  bucket = try(coalesce(var.session_logging_bucket_name, module.logs_bucket.bucket_id), "")
-}
-
-# https://docs.aws.amazon.com/systems-manager/latest/userguide/getting-started-create-iam-instance-profile.html#create-iam-instance-profile-ssn-logging
-data "aws_iam_policy_document" "session_logging" {
-  count = var.session_logging_enabled ? 1 : 0
-
-  statement {
-    sid    = "SSMAgentSessionAllowS3Logging"
-    effect = "Allow"
-    actions = [
-      "s3:PutObject"
-    ]
-    resources = ["${join("", data.aws_s3_bucket.logs_bucket.*.arn)}/*"]
-  }
-
-  statement {
-    sid    = "SSMAgentSessionAllowCloudWatchLogging"
-    effect = "Allow"
-    actions = [
-      "logs:CreateLogStream",
-      "logs:PutLogEvents",
-      "logs:DescribeLogGroups",
-      "logs:DescribeLogStreams"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    sid    = "SSMAgentSessionAllowGetEncryptionConfig"
-    effect = "Allow"
-    actions = [
-      "s3:GetEncryptionConfiguration"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    sid    = "SSMAgentSessionAllowKMSDataKey"
-    effect = "Allow"
-    actions = [
-      "kms:GenerateDataKey"
-    ]
-    resources = ["*"]
-  }
-}
 
 resource "aws_iam_role" "default" {
   name                 = module.role_label.id
@@ -157,12 +127,13 @@ resource "aws_iam_instance_profile" "default" {
 ###################
 
 resource "aws_security_group" "default" {
-  vpc_id      = var.vpc_id
+  vpc_id      = local.vpc_id
   name        = module.this.id
   description = "Allow ALL egress from SSM Agent."
   tags        = module.this.tags
 }
 
+# trivy:ignore:aws-vpc-no-public-egress-sgr SSM Agent requires broad egress to communicate with AWS services
 resource "aws_security_group_rule" "allow_all_egress" {
   type              = "egress"
   from_port         = 0
@@ -170,6 +141,7 @@ resource "aws_security_group_rule" "allow_all_egress" {
   protocol          = "-1"
   cidr_blocks       = ["0.0.0.0/0"]
   ipv6_cidr_blocks  = ["::/0"]
+  description       = "Allow all outbound traffic for SSM Agent communication with AWS services"
   security_group_id = aws_security_group.default.id
 }
 
@@ -246,21 +218,15 @@ DOC
 
 module "logs_bucket" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "3.1.2"
+  version = "4.10.0"
 
   enabled = local.logs_bucket_enabled
   context = module.logs_label.context
 
   # Encryption / Security
-  acl                          = "private"
-  sse_algorithm                = "aws:kms"
-  kms_master_key_arn           = local.session_logging_kms_key_arn
-  allow_encrypted_uploads_only = false
-  force_destroy                = true
-
-  # Feature enablement
-  user_enabled       = false
-  versioning_enabled = true
+  sse_algorithm      = "aws:kms"
+  kms_master_key_arn = local.session_logging_kms_key_arn
+  force_destroy      = true
 
   lifecycle_configuration_rules = [{
     enabled                                = true
@@ -385,7 +351,7 @@ resource "aws_autoscaling_group" "default" {
   # By default, we don't care to protect from scale in as we want to roll instances frequently
   protect_from_scale_in = var.protect_from_scale_in
 
-  vpc_zone_identifier = var.subnet_ids
+  vpc_zone_identifier = local.subnet_ids
 
   default_cooldown          = 180
   health_check_grace_period = 180
