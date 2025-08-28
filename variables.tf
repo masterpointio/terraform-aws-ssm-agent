@@ -212,3 +212,15 @@ variable "scale_in_protected_instances" {
     error_message = "scale_in_protected_instances must be one of Refresh, Ignore, or Wait"
   }
 }
+
+variable "custom_policy_document" {
+  description = "JSON policy document for custom permissions to attach to the SSM Agent role. If not provided, no custom policy will be attached."
+  type        = string
+  default     = ""
+}
+
+variable "custom_policy_name" {
+  description = "Name for the custom policy. Only used if custom_policy_document is provided."
+  type        = string
+  default     = "custom-policy"
+}

@@ -139,6 +139,14 @@ resource "aws_iam_role_policy" "session_logging" {
   policy = join("", data.aws_iam_policy_document.session_logging.*.json)
 }
 
+resource "aws_iam_role_policy" "custom" {
+  count = length(var.custom_policy_document) > 0 ? 1 : 0
+
+  name   = "${module.role_label.id}-${var.custom_policy_name}"
+  role   = aws_iam_role.default.name
+  policy = var.custom_policy_document
+}
+
 resource "aws_iam_instance_profile" "default" {
   name = module.role_label.id
   role = aws_iam_role.default.name
