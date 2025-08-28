@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.5.0...v1.6.0) (2025-08-28)
+
+
+### Features
+
+* allow additional custom IAM policy to attached EC2 role ([#52](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/52)) ([93a7757](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/93a77571a32dab45310d247f20f3e3d75d94e86d))
+
 ## [1.5.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.4.0...v1.5.0) (2025-08-01)
 
 
