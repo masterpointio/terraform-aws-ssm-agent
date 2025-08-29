@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.6.0...v1.7.0) (2025-08-29)
+
+
+### Features
+
+* add VPC and subnet name support ([#54](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/54)) ([8a3d43c](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/8a3d43c7b239ffc24e9083953bc30e5bcce6e027))
+
 ## [1.6.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.5.0...v1.6.0) (2025-08-28)
 
 
