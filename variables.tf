@@ -1,11 +1,25 @@
 variable "vpc_id" {
   type        = string
   description = "The ID of the VPC which the EC2 Instance will run in."
+  default     = null
 }
 
 variable "subnet_ids" {
   type        = list(string)
   description = "The Subnet IDs which the SSM Agent will run in. These *should* be private subnets."
+  default     = []
+}
+
+variable "vpc_name" {
+  type        = string
+  description = "The name of the VPC which the EC2 Instance will run in. If provided, vpc_id will be ignored."
+  default     = null
+}
+
+variable "subnet_names" {
+  type        = list(string)
+  description = "The Subnet names which the SSM Agent will run in. If provided, subnet_ids will be ignored. These *should* be private subnets."
+  default     = []
 }
 
 variable "permissions_boundary" {
@@ -158,6 +172,15 @@ variable "session_logging_bucket_name" {
   default     = ""
   type        = string
   description = "The name of the S3 Bucket to ship session logs to. This will remove creation of an independent session logging bucket. This is only relevant if the session_logging_enabled variable is `true`."
+
+  validation {
+    condition = var.session_logging_bucket_name == "" || (
+      can(regex("^[a-z0-9][a-z0-9.-]*[a-z0-9]$", var.session_logging_bucket_name)) &&
+      length(var.session_logging_bucket_name) >= 3 &&
+      length(var.session_logging_bucket_name) <= 63
+    )
+    error_message = "S3 bucket name must follow AWS naming conventions: 3-63 characters, lowercase letters, numbers, dots, and hyphens only, must start and end with letter or number."
+  }
 }
 
 variable "region" {
