@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 
 # VPC lookup by name (when vpc_name is provided)
 data "aws_vpc" "selected" {
-  count = length(var.vpc_name) > 0 ? 1 : 0
+  count = var.vpc_name != null ? 1 : 0
 
   filter {
     name   = "tag:Name"
@@ -18,6 +18,10 @@ data "aws_subnet" "selected" {
   filter {
     name   = "tag:Name"
     values = [each.value]
+  }
+  filter {
+    name   = "vpc-id"
+    values = [local.vpc_id]
   }
 }
 
@@ -79,12 +83,6 @@ data "aws_iam_policy_document" "default" {
   }
 }
 
-# S3 bucket for session logging (when using existing bucket)
-data "aws_s3_bucket" "logs_bucket" {
-  count  = var.session_logging_enabled ? 1 : 0
-  bucket = try(coalesce(var.session_logging_bucket_name, module.logs_bucket.bucket_id), "")
-}
-
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/getting-started-create-iam-instance-profile.html#create-iam-instance-profile-ssn-logging
 data "aws_iam_policy_document" "session_logging" {
   count = var.session_logging_enabled ? 1 : 0
@@ -95,7 +93,7 @@ data "aws_iam_policy_document" "session_logging" {
     actions = [
       "s3:PutObject"
     ]
-    resources = ["${join("", data.aws_s3_bucket.logs_bucket.*.arn)}/*"]
+    resources = ["${local.session_logging_bucket_arn}/*"]
   }
 
   statement {
@@ -103,11 +101,19 @@ data "aws_iam_policy_document" "session_logging" {
     effect = "Allow"
     actions = [
       "logs:CreateLogStream",
-      "logs:PutLogEvents",
+      "logs:PutLogEvents"
+    ]
+    resources = ["${local.session_logging_log_group_arn}:*"]
+  }
+
+  statement {
+    sid    = "SSMAgentSessionAllowCloudWatchDescribe"
+    effect = "Allow"
+    actions = [
       "logs:DescribeLogGroups",
       "logs:DescribeLogStreams"
     ]
-    resources = ["*"]
+    resources = [local.session_logging_log_group_arn]
   }
 
   statement {
@@ -116,7 +122,7 @@ data "aws_iam_policy_document" "session_logging" {
     actions = [
       "s3:GetEncryptionConfiguration"
     ]
-    resources = ["*"]
+    resources = [local.session_logging_bucket_arn]
   }
 
   statement {
@@ -125,6 +131,6 @@ data "aws_iam_policy_document" "session_logging" {
     actions = [
       "kms:GenerateDataKey"
     ]
-    resources = ["*"]
+    resources = [local.session_logging_kms_key_arn]
   }
 }

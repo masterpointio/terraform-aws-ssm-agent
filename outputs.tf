@@ -24,11 +24,11 @@ output "role_id" {
 }
 
 output "session_logging_bucket_id" {
-  value       = local.logs_bucket_enabled ? join("", data.aws_s3_bucket.logs_bucket.*.id) : ""
+  value       = var.session_logging_enabled ? local.session_logging_bucket_name : ""
   description = "The ID of the SSM Agent Session Logging S3 Bucket."
 }
 
 output "session_logging_bucket_arn" {
-  value       = local.logs_bucket_enabled ? join("", data.aws_s3_bucket.logs_bucket.*.arn) : ""
+  value       = local.session_logging_bucket_arn
   description = "The ARN of the SSM Agent Session Logging S3 Bucket."
 }

@@ -15,7 +15,7 @@ locals {
   )
 
   # VPC and Subnet ID resolution - names take precedence over IDs
-  vpc_id     = length(var.vpc_name) > 0 ? one(data.aws_vpc.selected[*].id) : var.vpc_id
+  vpc_id     = var.vpc_name != null ? one(data.aws_vpc.selected[*].id) : var.vpc_id
   subnet_ids = length(var.subnet_names) > 0 ? values(data.aws_subnet.selected)[*].id : var.subnet_ids
 
 }
@@ -31,33 +31,6 @@ resource "null_resource" "validate_instance_type" {
   }
 }
 
-# Validation using terraform_data to halt execution if requirements aren't met
-resource "terraform_data" "vpc_subnet_validation" {
-  lifecycle {
-    precondition {
-      condition     = length(var.vpc_name) > 0 || length(var.vpc_id) > 0
-      error_message = "Either vpc_name or vpc_id must be provided."
-    }
-
-    precondition {
-      condition     = length(var.subnet_names) > 0 || length(var.subnet_ids) > 0
-      error_message = "Either subnet_names or subnet_ids must be provided."
-    }
-  }
-}
-
-# Warning checks for VPC and subnet configuration (non-blocking)
-check "vpc_subnet_warnings" {
-  assert {
-    condition     = !(length(var.vpc_name) > 0 && length(var.vpc_id) > 0)
-    error_message = "Both vpc_name and vpc_id are provided. When vpc_name is specified, vpc_id will be ignored."
-  }
-
-  assert {
-    condition     = !(length(var.subnet_names) > 0 && length(var.subnet_ids) > 0)
-    error_message = "Both subnet_names and subnet_ids are provided. When subnet_names are specified, subnet_ids will be ignored."
-  }
-}
 
 module "role_label" {
   source  = "cloudposse/label/null"
@@ -79,8 +52,10 @@ locals {
   region     = coalesce(var.region, data.aws_region.current.region)
   account_id = data.aws_caller_identity.current.account_id
 
-  session_logging_bucket_name = try(coalesce(var.session_logging_bucket_name, module.logs_label.id), "")
-  session_logging_kms_key_arn = try(coalesce(var.session_logging_kms_key_arn, module.kms_key.key_arn), "")
+  session_logging_bucket_name   = try(coalesce(var.session_logging_bucket_name, module.logs_label.id), "")
+  session_logging_kms_key_arn   = try(coalesce(var.session_logging_kms_key_arn, module.kms_key.key_arn), "")
+  session_logging_bucket_arn    = var.session_logging_enabled ? "arn:aws:s3:::${local.session_logging_bucket_name}" : ""
+  session_logging_log_group_arn = var.session_logging_enabled ? "arn:aws:logs:${local.region}:${local.account_id}:log-group:${module.logs_label.id}" : ""
 
   logs_bucket_enabled = var.session_logging_enabled && length(var.session_logging_bucket_name) == 0
 }

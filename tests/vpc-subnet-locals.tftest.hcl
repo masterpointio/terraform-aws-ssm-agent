@@ -27,7 +27,7 @@ mock_provider "aws" {
 
   mock_data "aws_ami" {
     defaults = {
-      id = "ami-mock"
+      id               = "ami-mock"
       root_device_name = "/dev/xvda"
     }
   }
@@ -40,7 +40,7 @@ mock_provider "aws" {
 
   mock_data "aws_s3_bucket" {
     defaults = {
-      id = "mock-bucket"
+      id  = "mock-bucket"
       arn = "arn:aws:s3:::mock-bucket"
     }
   }
@@ -48,21 +48,21 @@ mock_provider "aws" {
   # Mock AWS resources that get created in the module
   mock_resource "aws_launch_template" {
     defaults = {
-      id = "lt-mock123456"
+      id             = "lt-mock123456"
       latest_version = "1"
     }
   }
 }
 
 # Test precedence - names over IDs
-run "test_precedence_local" {
+run "verify_vpc_subnet_name_precedence" {
   command = plan
 
   variables {
-    vpc_id       = "vpc-should-be-ignored"
-    vpc_name     = "my-vpc"
-    subnet_ids   = ["subnet-should-be-ignored"]
-    subnet_names = ["my-subnet"]
+    vpc_id                  = "vpc-should-be-ignored"
+    vpc_name                = "my-vpc"
+    subnet_ids              = ["subnet-should-be-ignored"]
+    subnet_names            = ["my-subnet"]
     session_logging_enabled = false
 
     # Add required context variables for proper naming

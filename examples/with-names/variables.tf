@@ -21,9 +21,3 @@ variable "availability_zones" {
   description = "List of availability zones"
   default     = ["us-east-1a", "us-east-1b"]
 }
-
-variable "ipv6_enabled" {
-  type        = bool
-  description = "Enable IPv6"
-  default     = false
-}
