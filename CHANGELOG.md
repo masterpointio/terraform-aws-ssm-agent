@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.7.0...v1.8.0) (2025-09-05)
+
+
+### Features
+
+* support enforcing SSL and encrypted uploads for logs  ([#57](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/57)) ([1d29672](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/1d2967235a1caee6281380a1ccd6d1f53f229f20))
+
 ## [1.7.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.6.0...v1.7.0) (2025-08-29)
 
 
