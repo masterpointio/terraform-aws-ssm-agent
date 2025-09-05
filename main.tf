@@ -199,9 +199,11 @@ module "logs_bucket" {
   context = module.logs_label.context
 
   # Encryption / Security
-  sse_algorithm      = "aws:kms"
-  kms_master_key_arn = local.session_logging_kms_key_arn
-  force_destroy      = true
+  sse_algorithm                = "aws:kms"
+  kms_master_key_arn           = local.session_logging_kms_key_arn
+  allow_ssl_requests_only      = var.allow_ssl_requests_only
+  allow_encrypted_uploads_only = var.allow_encrypted_uploads_only
+  force_destroy                = true
 
   lifecycle_configuration_rules = [{
     enabled                                = true
