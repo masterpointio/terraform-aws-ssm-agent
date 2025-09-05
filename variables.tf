@@ -183,7 +183,7 @@ variable "session_logging_bucket_name" {
 }
 
 variable "allow_ssl_requests_only" {
-  description = "Whether or not to allow SSL requests only. If set to `true` this will create a bucket policy that `Deny` if SSL is not used in the requests."
+  description = "Whether or not to allow SSL requests only. If set to `true` this will create a bucket policy that `Deny` if SSL is not used in the requests using the `aws:SecureTransport` condition."
   type        = bool
   default     = false
 }
