@@ -105,7 +105,7 @@ resource "aws_security_group" "default" {
   vpc_id      = local.vpc_id
   name        = module.this.id
   description = "Allow ALL egress from SSM Agent."
-  # tags        = module.this.tags
+  tags        = module.this.tags
 }
 
 # trivy:ignore:aws-vpc-no-public-egress-sgr SSM Agent requires broad egress to communicate with AWS services
