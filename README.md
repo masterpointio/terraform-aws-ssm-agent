@@ -30,7 +30,7 @@ Big shout out to the following projects which this project uses/depends on/menti
 ```hcl
 module "ssm_agent" {
   source  = "masterpointio/ssm-agent/aws"
-  version = "1.8.0"
+  version = "X.X.X"
 
   namespace = var.namespace
   stage     = var.stage
@@ -41,7 +41,7 @@ module "ssm_agent" {
 
 module "vpc" {
   source  = "cloudposse/vpc/aws"
-  version = "2.1.0"
+  version = "X.X.X"
 
   namespace = var.namespace
   stage     = var.stage
@@ -53,7 +53,7 @@ module "vpc" {
 
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
-  version = "2.3.0"
+  version = "X.X.X"
 
   namespace = var.namespace
   stage     = var.stage
