@@ -91,7 +91,7 @@ Prereqs:
 - Ensure the network architecture and Security Group permissions allow inbound traffic from the SSM Agent EC2 host.
 
 ```bash
-REGION=us-east-1
+AWS_REGION=us-east-1
 # Partial match for RDS instance name (e.g., "polygon" matches "acme-prod-polygon-data")
 DB_INSTANCE_SUBSTRING="polygon"
 LOCAL_PORT=15432
