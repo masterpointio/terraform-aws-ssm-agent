@@ -68,6 +68,10 @@ module "subnets" {
 
 ### Connecting to your new SSM Agent
 
+Prereqs:
+
+- Your IAM users/role needs: `ssm:StartSession`, `ec2:DescribeInstances`
+
 ```bash
 INSTANCE_ID=$(aws autoscaling describe-auto-scaling-instances | jq --raw-output ".AutoScalingInstances | .[0] | .InstanceId")
 aws ssm start-session --target $INSTANCE_ID
@@ -76,6 +80,54 @@ aws ssm start-session --target $INSTANCE_ID
 OR
 
 Use [the awesome `gossm` project](https://github.com/gjbae1212/gossm).
+
+### Set up port forwarding through your SSM Agent
+
+For example, set up port forwarding on `localhost` to connect to an RDS Postgres instance on private subnets that is not publicly accessible.
+
+Prereqs:
+
+- Your IAM user/role needs the following permissions: `ssm:StartSession`, `ec2:DescribeInstances`, `rds:DescribeDBInstances`
+- Ensure the network architecture and Security Group permissions allow inbound traffic from the SSM Agent EC2 host.
+
+```bash
+AWS_REGION=us-east-1
+# Partial match for RDS instance name (e.g., "polygon" matches "acme-prod-polygon-data")
+DB_INSTANCE_SUBSTRING="polygon"
+LOCAL_PORT=15432
+
+# 1) Find the running SSM gateway instance ID by tag
+INSTANCE_ID="$(
+  aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=*ssm*" "Name=instance-state-name,Values=running" \
+  --query 'Reservations[*].Instances[*].InstanceId' \
+  --region ${AWS_REGION} \
+  --output text)"
+
+# 2) Find the RDS instance endpoint
+RDS_ENDPOINT="$(
+	aws rds describe-db-instances \
+  --region ${AWS_REGION} \
+  --query "DBInstances[?contains(DBInstanceIdentifier, '${DB_INSTANCE_SUBSTRING}')].Endpoint.Address | [0]" \
+  --output text)"
+
+# 3) Dynamically get the RDS port
+RDS_PORT="$(
+	aws rds describe-db-instances \
+  --region ${AWS_REGION} \
+  --query "DBInstances[?contains(DBInstanceIdentifier, '${DB_INSTANCE_SUBSTRING}')].Endpoint.Port | [0]" \
+  --output text)"
+
+echo "EC2 Instance ID: $INSTANCE_ID"
+echo "RDS Endpoint: $RDS_ENDPOINT"
+echo "Setting up port forwarding (ec2) ${RDS_PORT} -> (localhost) ${LOCAL_PORT}"
+
+# 4) Start the port forwarding session
+aws ssm start-session \
+  --target $INSTANCE_ID \
+  --document-name AWS-StartPortForwardingSessionToRemoteHost \
+  --parameters "{\"host\":[\"$RDS_ENDPOINT\"],\"portNumber\":[\"$RDS_PORT\"],\"localPortNumber\":[\"$LOCAL_PORT\"]}"
+```
 
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
