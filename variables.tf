@@ -51,15 +51,15 @@ variable "architecture" {
 }
 
 variable "user_data" {
-  default     = <<EOT
-#!/bin/bash
-# NOTE: Since we're using a latest Amazon Linux AMI, we shouldn't need this,
-# but we'll update it to be sure.
-cd /tmp
-sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-sudo systemctl enable amazon-ssm-agent
-sudo systemctl start amazon-ssm-agent
-EOT
+  default     = <<-EOT
+    #!/bin/bash
+    # NOTE: Since we're using a latest Amazon Linux AMI, we shouldn't need this,
+    # but we'll update it to be sure.
+    cd /tmp
+    sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_arm64/amazon-ssm-agent.rpm
+    sudo systemctl enable amazon-ssm-agent
+    sudo systemctl start amazon-ssm-agent
+  EOT
   type        = string
   description = "The user_data to use for the SSM Agent EC2 instance. You can use this to automate installation of psql or other required command line tools."
 }
