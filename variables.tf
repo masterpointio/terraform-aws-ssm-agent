@@ -35,7 +35,12 @@ variable "permissions_boundary" {
 variable "instance_type" {
   default     = "t4g.nano"
   type        = string
-  description = "The instance type to use for the SSM Agent EC2 instance."
+  description = <<-EOT
+    The instance type to use for the SSM Agent EC2 instance.
+    Must be compatible with var.architecture:
+    - For arm64: use 'g' instances (t4g, m6g, c6g)
+    - For x86_64: use non-'g' instances (t3, m5, c5)
+  EOT
 }
 
 variable "ami" {
@@ -45,12 +50,17 @@ variable "ami" {
 }
 
 variable "architecture" {
-  description = "The architecture of the AMI (e.g., x86_64, arm64)"
   type        = string
   default     = "arm64"
+  description = <<-EOT
+    The architecture of the AMI (x86_64 or arm64).
+    Must be compatible with var.instance_type and var.user_data.
+    Default is arm64 to match the default instance_type (t4g.nano) and default user_data (arm64 SSM agent).
+  EOT
 }
 
 variable "user_data" {
+  type        = string
   default     = <<-EOT
     #!/bin/bash
     # NOTE: Since we're using a latest Amazon Linux AMI, we shouldn't need this,
@@ -60,8 +70,11 @@ variable "user_data" {
     sudo systemctl enable amazon-ssm-agent
     sudo systemctl start amazon-ssm-agent
   EOT
-  type        = string
-  description = "The user_data to use for the SSM Agent EC2 instance. You can use this to automate installation of psql or other required command line tools."
+  description = <<-EOT
+    The user_data to use for the SSM Agent EC2 instance.
+    Default installs arm64 SSM agent - if using x86_64 architecture, provide a custom script with amd64 binaries.
+    You can also use this to automate installation of psql or other required command line tools.
+  EOT
 }
 
 variable "key_pair_name" {
