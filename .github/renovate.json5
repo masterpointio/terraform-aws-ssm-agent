@@ -57,7 +57,6 @@
     {
       "matchFileNames": ["**/*.tf"],
       "matchDepTypes": ["required_version"],
-      "registryUrls": ["https://registry.terraform.io"],
       "groupName": "tf"
     }
   ]
