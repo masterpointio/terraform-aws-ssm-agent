@@ -9,6 +9,18 @@ locals {
     (var.architecture == "arm64" && element(local.instance_type_chars, 2) == "g")
   )
 
+  # Check if user_data contains architecture-specific references
+  user_data_has_arm64 = can(regex("arm64", var.user_data))
+  user_data_has_amd64 = can(regex("amd64", var.user_data))
+
+  # Full compatibility: instance type + architecture + user_data script must all align
+  is_fully_compatible = local.is_instance_compatible && (
+    # If user_data references arm64, architecture must be arm64
+    (!local.user_data_has_arm64 || var.architecture == "arm64") &&
+    # If user_data references amd64, architecture must be x86_64
+    (!local.user_data_has_amd64 || var.architecture == "x86_64")
+  )
+
   # Get the root device name from the provided/default AMI.
   root_volume_device_name = (
     length(var.ami) > 0 ? element(data.aws_ami.instance, 0).root_device_name : "/dev/xvda"
@@ -20,13 +32,18 @@ locals {
 
 }
 
-resource "null_resource" "validate_instance_type" {
-  count = local.is_instance_compatible ? 0 : 1
-
+resource "terraform_data" "validate_configuration" {
   lifecycle {
     precondition {
-      condition     = local.is_instance_compatible
-      error_message = "The instance_type must be compatible with the specified architecture. For x86_64, you cannot use instance types with ARM processors (e.g., t3, m5, c5). For arm64, use instance types with 'g' indicating ARM processor (e.g., t4g, c6g, m6g)."
+      condition     = local.is_fully_compatible
+      error_message = <<-EOT
+        Configuration mismatch detected. Ensure instance_type, architecture, and user_data are aligned:
+        - instance_type: "${var.instance_type}"
+        - architecture: "${var.architecture}"
+        - user_data contains: ${local.user_data_has_arm64 ? "arm64" : local.user_data_has_amd64 ? "amd64" : "no architecture-specific reference"}
+
+        Update var.instance_type, var.architecture, and/or var.user_data to fix. See variable descriptions for valid combinations.
+      EOT
     }
   }
 }

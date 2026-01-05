@@ -138,7 +138,6 @@ aws ssm start-session \
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
-| <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.2 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.7 |
 
 ## Providers
@@ -146,7 +145,6 @@ aws ssm start-session \
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0 |
-| <a name="provider_null"></a> [null](#provider\_null) | >= 3.2 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
@@ -175,7 +173,7 @@ aws ssm start-session \
 | [aws_security_group_rule.additional](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.allow_all_egress](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_ssm_document.session_logging](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_document) | resource |
-| [null_resource.validate_instance_type](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
+| [terraform_data.validate_configuration](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [terraform_data.vpc_subnet_validation](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [aws_ami.amazon_linux_2023](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_ami.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
@@ -196,7 +194,7 @@ aws ssm start-session \
 | <a name="input_allow_encrypted_uploads_only"></a> [allow\_encrypted\_uploads\_only](#input\_allow\_encrypted\_uploads\_only) | Whether or not to allow encrypted uploads only. If set to `true` this will create a bucket policy that `Deny` if encryption header is missing in the requests. | `bool` | `false` | no |
 | <a name="input_allow_ssl_requests_only"></a> [allow\_ssl\_requests\_only](#input\_allow\_ssl\_requests\_only) | Whether or not to allow SSL requests only. If set to `true` this will create a bucket policy that `Deny` if SSL is not used in the requests using the `aws:SecureTransport` condition. | `bool` | `false` | no |
 | <a name="input_ami"></a> [ami](#input\_ami) | The AMI to use for the SSM Agent EC2 Instance. If not provided, the latest Amazon Linux 2023 AMI will be used. Note: This will update periodically as AWS releases updates to their AL2023 AMI. Pin to a specific AMI if you would like to avoid these updates. | `string` | `""` | no |
-| <a name="input_architecture"></a> [architecture](#input\_architecture) | The architecture of the AMI (e.g., x86\_64, arm64) | `string` | `"arm64"` | no |
+| <a name="input_architecture"></a> [architecture](#input\_architecture) | The architecture of the AMI (x86\_64 or arm64).<br/>Must be compatible with var.instance\_type and var.user\_data.<br/>Default is arm64 to match the default instance\_type (t4g.nano) and default user\_data (arm64 SSM agent). | `string` | `"arm64"` | no |
 | <a name="input_associate_public_ip_address"></a> [associate\_public\_ip\_address](#input\_associate\_public\_ip\_address) | Associate public IP address | `bool` | `null` | no |
 | <a name="input_attributes"></a> [attributes](#input\_attributes) | ID element. Additional attributes (e.g. `workers` or `cluster`) to add to `id`,<br/>in the order they appear in the list. New attributes are appended to the<br/>end of the list. The elements of the list are joined by the `delimiter`<br/>and treated as a single ID element. | `list(string)` | `[]` | no |
 | <a name="input_cloudwatch_retention_in_days"></a> [cloudwatch\_retention\_in\_days](#input\_cloudwatch\_retention\_in\_days) | The number of days to retain session logs in CloudWatch. This is only relevant if the session\_logging\_enabled variable is `true`. | `number` | `365` | no |
@@ -210,7 +208,7 @@ aws ssm start-session \
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Set to false to prevent the module from creating any resources | `bool` | `null` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | ID element. Usually used for region e.g. 'uw2', 'us-west-2', OR role 'prod', 'staging', 'dev', 'UAT' | `string` | `null` | no |
 | <a name="input_id_length_limit"></a> [id\_length\_limit](#input\_id\_length\_limit) | Limit `id` to this many characters (minimum 6).<br/>Set to `0` for unlimited length.<br/>Set to `null` for keep the existing setting, which defaults to `0`.<br/>Does not affect `id_full`. | `number` | `null` | no |
-| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | The instance type to use for the SSM Agent EC2 instance. | `string` | `"t4g.nano"` | no |
+| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | The instance type to use for the SSM Agent EC2 instance.<br/>Must be compatible with var.architecture:<br/>- For arm64: use 'g' instances (t4g, m6g, c6g)<br/>- For x86\_64: use non-'g' instances (t3, m5, c5) | `string` | `"t4g.nano"` | no |
 | <a name="input_key_pair_name"></a> [key\_pair\_name](#input\_key\_pair\_name) | The name of the key-pair to associate with the SSM Agent instances. This can be (and probably should) left empty unless you specifically plan to use `AWS-StartSSHSession`. | `string` | `null` | no |
 | <a name="input_label_key_case"></a> [label\_key\_case](#input\_label\_key\_case) | Controls the letter case of the `tags` keys (label names) for tags generated by this module.<br/>Does not affect keys of tags passed in via the `tags` input.<br/>Possible values: `lower`, `title`, `upper`.<br/>Default value: `title`. | `string` | `null` | no |
 | <a name="input_label_order"></a> [label\_order](#input\_label\_order) | The order in which the labels (ID elements) appear in the `id`.<br/>Defaults to ["namespace", "environment", "stage", "name", "attributes"].<br/>You can omit any of the 6 labels ("tenant" is the 6th), but at least one must be present. | `list(string)` | `null` | no |
@@ -240,7 +238,7 @@ aws ssm start-session \
 | <a name="input_subnet_names"></a> [subnet\_names](#input\_subnet\_names) | The Subnet names which the SSM Agent will run in. If provided, subnet\_ids will be ignored. These *should* be private subnets. | `list(string)` | `[]` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (e.g. `{'BusinessUnit': 'XYZ'}`).<br/>Neither the tag keys nor the tag values will be modified by this module. | `map(string)` | `{}` | no |
 | <a name="input_tenant"></a> [tenant](#input\_tenant) | ID element \_(Rarely used, not included by default)\_. A customer identifier, indicating who this instance of a resource is for | `string` | `null` | no |
-| <a name="input_user_data"></a> [user\_data](#input\_user\_data) | The user\_data to use for the SSM Agent EC2 instance. You can use this to automate installation of psql or other required command line tools. | `string` | `"#!/bin/bash\n# NOTE: Since we're using a latest Amazon Linux AMI, we shouldn't need this,\n# but we'll update it to be sure.\ncd /tmp\nsudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpmnsudo systemctl enable amazon-ssm-agent\nsudo systemctl start amazon-ssm-agent\n"` | no |
+| <a name="input_user_data"></a> [user\_data](#input\_user\_data) | The user\_data to use for the SSM Agent EC2 instance.<br/>Default installs arm64 SSM agent - if using x86\_64 architecture, provide a custom script with amd64 binaries.<br/>You can also use this to automate installation of psql or other required command line tools. | `string` | `"#!/bin/bash\n# NOTE: Since we're using a latest Amazon Linux AMI, we shouldn't need this,\n# but we'll update it to be sure.\ncd /tmp\nsudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_arm64/amazon-ssm-agent.rpmnsudo systemctl enable amazon-ssm-agent\nsudo systemctl start amazon-ssm-agent\n"` | no |
 | <a name="input_volume_size"></a> [volume\_size](#input\_volume\_size) | The size of the volume in gigabytes. | `number` | `null` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The ID of the VPC which the EC2 Instance will run in. | `string` | `null` | no |
 | <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | The name of the VPC which the EC2 Instance will run in. If provided, vpc\_id will be ignored. | `string` | `null` | no |
