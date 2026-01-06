@@ -19,7 +19,7 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: Trunk Check
-        uses: trunk-io/trunk-action@4d5ecc89b2691705fd08c747c78652d2fc806a94 # v1.1.19
+        uses: trunk-io/trunk-action@75699af9e26881e564e9d832ef7dc3af25ec031b # v1.2.4
         env:
           # NOTE: inject the GITHUB_TOKEN for the trunk managed tflint linter
           # https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/plugins.md#avoiding-rate-limiting
