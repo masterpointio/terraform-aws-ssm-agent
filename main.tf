@@ -160,7 +160,7 @@ resource "aws_security_group_rule" "additional" {
 
 module "kms_key" {
   source  = "cloudposse/kms-key/aws"
-  version = "0.12.1"
+  version = "0.12.2"
 
   enabled = var.session_logging_enabled && var.session_logging_encryption_enabled && length(var.session_logging_kms_key_arn) == 0
   context = module.logs_label.context
