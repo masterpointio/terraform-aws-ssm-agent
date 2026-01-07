@@ -151,7 +151,7 @@ aws ssm start-session \
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_kms_key"></a> [kms\_key](#module\_kms\_key) | cloudposse/kms-key/aws | 0.12.1 |
+| <a name="module_kms_key"></a> [kms\_key](#module\_kms\_key) | cloudposse/kms-key/aws | 0.12.2 |
 | <a name="module_logs_bucket"></a> [logs\_bucket](#module\_logs\_bucket) | cloudposse/s3-bucket/aws | 4.10.0 |
 | <a name="module_logs_label"></a> [logs\_label](#module\_logs\_label) | cloudposse/label/null | 0.25.0 |
 | <a name="module_role_label"></a> [role\_label](#module\_role\_label) | cloudposse/label/null | 0.25.0 |
