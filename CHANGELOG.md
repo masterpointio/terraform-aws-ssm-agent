@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.1](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.8.0...v1.8.1) (2026-01-07)
+
+
+### Bug Fixes
+
+* correct arch in userdata ([#64](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/64)) ([2ee5b6e](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/2ee5b6e0e065d38159765f3ec25ee09b4f6cd4de))
+* update compability tests ([#73](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/73)) ([b0a4f4b](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/b0a4f4b0422f3b60909eb7a5042ea08b64530ad4))
+
 ## [1.8.0](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.7.0...v1.8.0) (2025-09-05)
 
 
