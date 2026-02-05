@@ -23,7 +23,7 @@ locals {
 
   # Get the root device name from the provided/default AMI.
   root_volume_device_name = (
-    length(var.ami) > 0 ? element(data.aws_ami.instance, 0).root_device_name : "/dev/xvda"
+    length(var.ami) > 0 ? one(data.aws_ami.instance[*].root_device_name) : "/dev/xvda"
   )
 
   # VPC and Subnet ID resolution - names take precedence over IDs
@@ -33,6 +33,8 @@ locals {
 }
 
 resource "terraform_data" "validate_configuration" {
+  count = local.enabled ? 1 : 0
+
   lifecycle {
     precondition {
       condition     = local.is_fully_compatible
@@ -82,6 +84,8 @@ locals {
 ###################
 
 resource "aws_iam_role" "default" {
+  count = local.enabled ? 1 : 0
+
   name                 = module.role_label.id
   assume_role_policy   = data.aws_iam_policy_document.default.json
   permissions_boundary = var.permissions_boundary
@@ -89,29 +93,33 @@ resource "aws_iam_role" "default" {
 }
 
 resource "aws_iam_role_policy_attachment" "default" {
-  role       = aws_iam_role.default.name
+  count = local.enabled ? 1 : 0
+
+  role       = one(aws_iam_role.default[*].name)
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_role_policy" "session_logging" {
-  count = var.session_logging_enabled ? 1 : 0
+  count = local.enabled && var.session_logging_enabled ? 1 : 0
 
   name   = "${module.role_label.id}-session-logging"
-  role   = aws_iam_role.default.name
-  policy = join("", data.aws_iam_policy_document.session_logging.*.json)
+  role   = one(aws_iam_role.default[*].name)
+  policy = join("", data.aws_iam_policy_document.session_logging[*].json)
 }
 
 resource "aws_iam_role_policy" "custom" {
-  count = length(var.custom_policy_document) > 0 ? 1 : 0
+  count = local.enabled && length(var.custom_policy_document) > 0 ? 1 : 0
 
   name   = "${module.role_label.id}-${var.custom_policy_name}"
-  role   = aws_iam_role.default.name
+  role   = one(aws_iam_role.default[*].name)
   policy = var.custom_policy_document
 }
 
 resource "aws_iam_instance_profile" "default" {
+  count = local.enabled ? 1 : 0
+
   name = module.role_label.id
-  role = aws_iam_role.default.name
+  role = one(aws_iam_role.default[*].name)
 }
 
 #####################
@@ -119,6 +127,8 @@ resource "aws_iam_instance_profile" "default" {
 ###################
 
 resource "aws_security_group" "default" {
+  count = local.enabled ? 1 : 0
+
   vpc_id      = local.vpc_id
   name        = module.this.id
   description = "Allow ALL egress from SSM Agent."
@@ -127,6 +137,8 @@ resource "aws_security_group" "default" {
 
 # trivy:ignore:aws-vpc-no-public-egress-sgr SSM Agent requires broad egress to communicate with AWS services
 resource "aws_security_group_rule" "allow_all_egress" {
+  count = local.enabled ? 1 : 0
+
   type              = "egress"
   from_port         = 0
   to_port           = 0
@@ -134,11 +146,11 @@ resource "aws_security_group_rule" "allow_all_egress" {
   cidr_blocks       = ["0.0.0.0/0"]
   ipv6_cidr_blocks  = ["::/0"]
   description       = "Allow all outbound traffic for SSM Agent communication with AWS services"
-  security_group_id = aws_security_group.default.id
+  security_group_id = one(aws_security_group.default[*].id)
 }
 
 resource "aws_security_group_rule" "additional" {
-  for_each = var.additional_security_group_rules
+  for_each = local.enabled ? var.additional_security_group_rules : {}
 
   type      = lookup(each.value, "type")
   from_port = lookup(each.value, "from_port")
@@ -151,7 +163,7 @@ resource "aws_security_group_rule" "additional" {
   prefix_list_ids  = lookup(each.value, "prefix_list_ids", null)
   self             = lookup(each.value, "self", null)
 
-  security_group_id = aws_security_group.default.id
+  security_group_id = one(aws_security_group.default[*].id)
 }
 
 #######################
@@ -162,7 +174,7 @@ module "kms_key" {
   source  = "cloudposse/kms-key/aws"
   version = "0.12.2"
 
-  enabled = var.session_logging_enabled && var.session_logging_encryption_enabled && length(var.session_logging_kms_key_arn) == 0
+  enabled = local.enabled && var.session_logging_enabled && var.session_logging_encryption_enabled && length(var.session_logging_kms_key_arn) == 0
   context = module.logs_label.context
 
   description             = "KMS key for encrypting Session Logs in S3 and CloudWatch."
@@ -212,7 +224,7 @@ module "logs_bucket" {
   source  = "cloudposse/s3-bucket/aws"
   version = "4.10.0"
 
-  enabled = local.logs_bucket_enabled
+  enabled = local.logs_bucket_enabled && module.this.enabled
   context = module.logs_label.context
 
   # Encryption / Security
@@ -246,7 +258,7 @@ module "logs_bucket" {
 }
 
 resource "aws_cloudwatch_log_group" "session_logging" {
-  count = var.session_logging_enabled ? 1 : 0
+  count = local.enabled && var.session_logging_enabled ? 1 : 0
 
   name              = module.logs_label.id
   retention_in_days = var.cloudwatch_retention_in_days
@@ -255,7 +267,7 @@ resource "aws_cloudwatch_log_group" "session_logging" {
 }
 
 resource "aws_ssm_document" "session_logging" {
-  count = var.session_logging_enabled && var.create_run_shell_document ? 1 : 0
+  count = local.enabled && var.session_logging_enabled && var.create_run_shell_document ? 1 : 0
 
   name          = var.session_logging_ssm_document_name
   document_type = "Session"
@@ -284,8 +296,10 @@ DOC
 ##########################
 
 resource "aws_launch_template" "default" {
+  count = local.enabled ? 1 : 0
+
   name_prefix   = module.this.id
-  image_id      = coalesce(var.ami, data.aws_ami.amazon_linux_2023.id)
+  image_id      = coalesce(var.ami, one(data.aws_ami.amazon_linux_2023[*].id))
   instance_type = var.instance_type
   key_name      = var.key_pair_name
   user_data     = base64encode(var.user_data)
@@ -299,11 +313,11 @@ resource "aws_launch_template" "default" {
   network_interfaces {
     associate_public_ip_address = var.associate_public_ip_address
     delete_on_termination       = true
-    security_groups             = concat(var.additional_security_group_ids, [aws_security_group.default.id])
+    security_groups             = concat(var.additional_security_group_ids, aws_security_group.default[*].id)
   }
 
   iam_instance_profile {
-    name = aws_iam_instance_profile.default.name
+    name = one(aws_iam_instance_profile.default[*].name)
   }
 
   tag_specifications {
@@ -336,6 +350,8 @@ resource "aws_launch_template" "default" {
 }
 
 resource "aws_autoscaling_group" "default" {
+  count = local.enabled ? 1 : 0
+
   name_prefix = "${module.this.id}-asg"
 
   max_size         = var.max_size
@@ -356,8 +372,8 @@ resource "aws_autoscaling_group" "default" {
   ]
 
   launch_template {
-    id      = aws_launch_template.default.id
-    version = aws_launch_template.default.latest_version
+    id      = one(aws_launch_template.default[*].id)
+    version = one(aws_launch_template.default[*].latest_version)
   }
 
   instance_refresh {
