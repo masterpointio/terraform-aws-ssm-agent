@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.2](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.8.1...v1.8.2) (2026-05-05)
+
+
+### Bug Fixes
+
+* pin GitHub Actions to commit SHAs (INT-326) ([#79](https://github.com/masterpointio/terraform-aws-ssm-agent/issues/79)) ([0b99fdc](https://github.com/masterpointio/terraform-aws-ssm-agent/commit/0b99fdc09307f0500ac0927a0714b28efc9a2200))
+
 ## [1.8.1](https://github.com/masterpointio/terraform-aws-ssm-agent/compare/v1.8.0...v1.8.1) (2026-01-07)
 
 
