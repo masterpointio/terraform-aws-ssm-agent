@@ -210,7 +210,7 @@ DOC
 
 module "logs_bucket" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "4.11.0"
+  version = "4.13.0"
 
   enabled = local.logs_bucket_enabled
   context = module.logs_label.context
