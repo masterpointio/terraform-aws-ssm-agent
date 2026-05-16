@@ -1,9 +1,13 @@
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
+locals {
+  enabled = module.this.enabled
+}
+
 # VPC lookup by name (when vpc_name is provided)
 data "aws_vpc" "selected" {
-  count = var.vpc_name != null ? 1 : 0
+  count = local.enabled && var.vpc_name != null ? 1 : 0
 
   filter {
     name   = "tag:Name"
@@ -13,7 +17,7 @@ data "aws_vpc" "selected" {
 
 # Individual subnet lookup by name (when subnet_names are provided)
 data "aws_subnet" "selected" {
-  for_each = toset(var.subnet_names)
+  for_each = local.enabled ? toset(var.subnet_names) : toset([])
 
   filter {
     name   = "tag:Name"
@@ -27,6 +31,8 @@ data "aws_subnet" "selected" {
 
 # Most recent Amazon Linux 2023 AMI
 data "aws_ami" "amazon_linux_2023" {
+  count = local.enabled ? 1 : 0
+
   most_recent = true
   owners      = ["amazon"]
 
@@ -59,7 +65,7 @@ data "aws_ami" "amazon_linux_2023" {
 #
 # trivy:ignore:AVD-AWS-0344
 data "aws_ami" "instance" {
-  count = length(var.ami) > 0 ? 1 : 0
+  count = local.enabled && length(var.ami) > 0 ? 1 : 0
 
   most_recent = true
 
