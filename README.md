@@ -12,6 +12,9 @@ A Terraform Module to create a simple, autoscaled SSM Agent EC2 instance along w
 
 This is intended to be used with SSM Session Manager and other SSM functionality to replace the need for a Bastion host and further secure your cloud environment. This includes an SSM document to enable session logging to S3 and CloudWatch for auditing purposes.
 
+> [!NOTE]
+For awareness, `aws ssm start-session --target` without `--document-name` falls back to the default `SSM-SessionManagerRunShell`. If the document’s name created by this module differs, logging preferences won't be respected by CLI & console sessions — AWS only lets you pick a [non-default document per-command](https://docs.aws.amazon.com/systems-manager/latest/userguide/getting-started-specify-session-document.html). If you keep the default name but AWS already auto-created it, Terraform won't adopt it and will error on the conflict.
+
 Big shout out to the following projects which this project uses/depends on/mentions:
 
 1. [gjbae1212/gossm](https://github.com/gjbae1212/gossm)
