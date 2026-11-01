@@ -14,7 +14,7 @@ permissions: {}
 
 jobs:
   lint:
-    uses: masterpointio/actions/.github/workflows/lint.yaml@7dad35e85d864ca5dda0971dfd3c940cc67ed380 #v0.3.0
+    uses: masterpointio/actions/.github/workflows/lint.yaml@29a77cce711f10ead0ca4815802f254f752ad6d3 # v0.4.0
     permissions:
       actions: read # for trunk-action
       checks: write # for trunk-action
