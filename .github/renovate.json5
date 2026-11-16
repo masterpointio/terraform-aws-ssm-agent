@@ -3,7 +3,7 @@
     'config:best-practices',
     'github>aquaproj/aqua-renovate-config#2.7.5',
   ],
-  "minimumReleaseAge": "3 days",
+  minimumReleaseAge: '3 days',
   enabledManagers: [
     'terraform',
     'github-actions',
@@ -21,7 +21,9 @@
     'after 9am on the first day of the month',
   ],
   assigneesFromCodeOwners: true,
-  dependencyDashboardAutoclose: true,
+  dependencyDashboard: {
+    autoclose: true,
+  },
   addLabels: [
     '{{manager}}',
   ],
