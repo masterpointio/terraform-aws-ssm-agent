@@ -14,7 +14,7 @@ permissions: {}
 
 jobs:
   trunk-upgrade:
-    uses: masterpointio/actions/.github/workflows/trunk-upgrade.yaml@7dad35e85d864ca5dda0971dfd3c940cc67ed380 #v0.3.0
+    uses: masterpointio/actions/.github/workflows/trunk-upgrade.yaml@29a77cce711f10ead0ca4815802f254f752ad6d3 # v0.4.0
     secrets:
       MP_BOT_APP_ID: ${{ secrets.MP_BOT_APP_ID }}
       MP_BOT_APP_PRIVATE_KEY: ${{ secrets.MP_BOT_APP_PRIVATE_KEY }}
